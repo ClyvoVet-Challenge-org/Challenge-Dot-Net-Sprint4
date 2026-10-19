@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DTO\**" />
+    <Compile Remove="Interface\**" />
+    <EmbeddedResource Remove="DTO\**" />
+    <EmbeddedResource Remove="Interface\**" />
+    <None Remove="DTO\**" />
+    <None Remove="Interface\**" />
+  </ItemGroup>
+
+</Project>
