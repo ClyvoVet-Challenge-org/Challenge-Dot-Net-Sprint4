@@ -10,9 +10,9 @@ public class EnderecoClinicasController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<EnderecoClinicasController> _logger;
-    private readonly IenderecoClinicaService _enderecoClinicaService;
+    private readonly IenderecoClinicaRepository _enderecoClinicaService;
 
-    public EnderecoClinicasController(AppDbContext context, ILogger<EnderecoClinicasController> logger, IenderecoClinicaService enderecoClinicaService)
+    public EnderecoClinicasController(AppDbContext context, ILogger<EnderecoClinicasController> logger, IenderecoClinicaRepository enderecoClinicaService)
     {
         _context = context;
         _logger = logger;

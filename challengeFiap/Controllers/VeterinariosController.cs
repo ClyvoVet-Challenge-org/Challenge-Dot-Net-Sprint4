@@ -10,9 +10,9 @@ public class VeterinariosController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<VeterinariosController> _logger;
-    private readonly IVeterinarioService _veterinarioService;
+    private readonly IVeterinarioRepository _veterinarioService;
 
-    public VeterinariosController(AppDbContext context, ILogger<VeterinariosController> logger, IVeterinarioService veterinarioService)
+    public VeterinariosController(AppDbContext context, ILogger<VeterinariosController> logger, IVeterinarioRepository veterinarioService)
     {
         _context = context;
         _logger = logger;

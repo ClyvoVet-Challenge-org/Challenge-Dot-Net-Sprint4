@@ -10,8 +10,8 @@ public class MedicamentoesController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<MedicamentoesController> _logger;
-    private readonly IMedicamentoService _medicamentoService;
-    public MedicamentoesController(AppDbContext context, ILogger<MedicamentoesController> logger, IMedicamentoService medicamentoService)
+    private readonly IMedicamentoRepository _medicamentoService;
+    public MedicamentoesController(AppDbContext context, ILogger<MedicamentoesController> logger, IMedicamentoRepository medicamentoService)
     {
         _context = context;
         _logger = logger;

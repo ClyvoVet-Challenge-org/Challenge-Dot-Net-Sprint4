@@ -10,9 +10,9 @@ public class TutorController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<TutorController> _logger;
-    private readonly ItutorService _tutorService;
+    private readonly ItutorRepository _tutorService;
 
-    public TutorController(AppDbContext context, ILogger<TutorController> logger, ItutorService tutorService)
+    public TutorController(AppDbContext context, ILogger<TutorController> logger, ItutorRepository tutorService)
     {
         _context = context;
         _logger = logger;

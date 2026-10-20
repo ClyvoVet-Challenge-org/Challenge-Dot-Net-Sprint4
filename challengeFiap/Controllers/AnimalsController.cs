@@ -1,4 +1,3 @@
-using challengeFiap.Application.Service;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
 using challengeFiap.Infrastruture.Data;
@@ -10,13 +9,13 @@ using Microsoft.EntityFrameworkCore;
 public class AnimalsController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly AnimalService _animalService;
+    private readonly IAnimalRepository _animalService;
     private readonly ILogger<AnimalsController> _logger;
 
     public AnimalsController(
         AppDbContext context,
         ILogger<AnimalsController> logger,
-        AnimalService animalService)
+        IAnimalRepository animalService)
     {
         _context = context;
         _logger = logger;

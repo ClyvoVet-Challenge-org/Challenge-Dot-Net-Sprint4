@@ -10,12 +10,12 @@ public class EnderecoAnimalsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<EnderecoAnimalsController> _logger;
-    private readonly IenderecoAnimalService _enderecoAnimalService;
+    private readonly IenderecoAnimalRepository _enderecoAnimalService;
 
     public EnderecoAnimalsController(
         AppDbContext context,
         ILogger<EnderecoAnimalsController> logger,
-        IenderecoAnimalService enderecoAnimalService)
+        IenderecoAnimalRepository enderecoAnimalService)
     {
         _context = context;
         _logger = logger;

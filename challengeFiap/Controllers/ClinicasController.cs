@@ -11,12 +11,12 @@ public class ClinicasController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ClinicasController> _logger;
-    private readonly IClinicaService _clinicaService;
+    private readonly IClinicaRepository _clinicaService;
 
     public ClinicasController(
         AppDbContext context,
         ILogger<ClinicasController> logger,
-        IClinicaService clinicaService)
+        IClinicaRepository clinicaService)
     {
         _context = context;
         _logger = logger;

@@ -11,13 +11,13 @@ public class CarteiraVacinalsController : ControllerBase
 {
     private readonly AppDbContext _context;
 
-    private readonly ICarteiraVacinalService _carteiraVacinalService;
+    private readonly ICarteiraVacinalRepository _carteiraVacinalService;
     private readonly ILogger<CarteiraVacinalsController> _logger;
 
     public CarteiraVacinalsController(
         AppDbContext context,
         ILogger<CarteiraVacinalsController> logger,
-        ICarteiraVacinalService carteiraVacinalService)
+        ICarteiraVacinalRepository carteiraVacinalService)
     {
         _context = context;
         _logger = logger;

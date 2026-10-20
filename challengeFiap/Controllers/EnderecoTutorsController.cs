@@ -10,8 +10,8 @@ public class EnderecoTutorsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<EnderecoTutorsController> _logger;
-    private readonly IenderecoTutorService _enderecoTutorService;
-    public EnderecoTutorsController(AppDbContext context, ILogger<EnderecoTutorsController> logger, IenderecoTutorService enderecoTutorService)
+    private readonly IenderecoTutorRepository _enderecoTutorService;
+    public EnderecoTutorsController(AppDbContext context, ILogger<EnderecoTutorsController> logger, IenderecoTutorRepository enderecoTutorService)
     {
         _context = context;
         _logger = logger;

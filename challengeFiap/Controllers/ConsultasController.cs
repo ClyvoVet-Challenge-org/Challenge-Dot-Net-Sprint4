@@ -10,12 +10,12 @@ public class ConsultasController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ConsultasController> _logger;
-    private readonly IConsultaService _consultaService;
+    private readonly IConsultaRepository _consultaService;
 
     public ConsultasController(
         AppDbContext context,
         ILogger<ConsultasController> logger,
-        IConsultaService consultaService)
+        IConsultaRepository consultaService)
     {
         _context = context;
         _logger = logger;

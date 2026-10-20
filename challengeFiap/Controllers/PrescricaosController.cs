@@ -10,8 +10,8 @@ public class PrescricaosController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<PrescricaosController> _logger;
-    private readonly IprescricaoService _prescricaoService;
-    public PrescricaosController(AppDbContext context, ILogger<PrescricaosController> logger, IprescricaoService prescricaoService)
+    private readonly IprescricaoRepository _prescricaoService;
+    public PrescricaosController(AppDbContext context, ILogger<PrescricaosController> logger, IprescricaoRepository prescricaoService)
     {
         _context = context;
         _logger = logger;
