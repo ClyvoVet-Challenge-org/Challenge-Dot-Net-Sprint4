@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class MedicamentoesControllerTests
     {
 
-        private readonly Mock<IMedicamentoService> _MedicamentoServiceMock;
+        private readonly Mock<IMedicamentoRepository> _MedicamentoServiceMock;
 
         private readonly MedicamentoesController _controller;
         private readonly ILogger<MedicamentoesController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public MedicamentoesControllerTests()
         {
-            _MedicamentoServiceMock = new Mock<IMedicamentoService>();
+            _MedicamentoServiceMock = new Mock<IMedicamentoRepository>();
             var loggMock = new Mock<ILogger<MedicamentoesController>>();
             _logger = loggMock.Object;
 

@@ -17,7 +17,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             OracleModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -55,8 +55,8 @@ namespace ChallengeFiap.Infrastruture.Migrations
                         .HasColumnName("nr_microchip_animal");
 
                     b.Property<decimal>("Peso_animal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("DECIMAL(18,2)")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("DECIMAL(5,2)")
                         .HasColumnName("peso_animal");
 
                     b.Property<string>("Raca_animal")
@@ -205,7 +205,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<string>("Complemento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("complemento");
+                        .HasColumnName("completo");
 
                     b.Property<string>("Estado")
                         .IsRequired()
@@ -266,7 +266,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<string>("Complemento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("complemento");
+                        .HasColumnName("completo");
 
                     b.Property<string>("Estado")
                         .IsRequired()
@@ -327,7 +327,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<string>("Complemento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("complemento");
+                        .HasColumnName("completo");
 
                     b.Property<string>("Estado")
                         .IsRequired()

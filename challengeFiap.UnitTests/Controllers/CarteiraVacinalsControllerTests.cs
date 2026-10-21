@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class CarteiraVacinalsControllerTests
     {
 
-        private readonly Mock<ICarteiraVacinalService> _CarteiraVacinalServiceMock;
+        private readonly Mock<ICarteiraVacinalRepository> _CarteiraVacinalServiceMock;
 
         private readonly CarteiraVacinalsController _controller;
         private readonly ILogger<CarteiraVacinalsController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public CarteiraVacinalsControllerTests()
         {
-            _CarteiraVacinalServiceMock = new Mock<ICarteiraVacinalService>();
+            _CarteiraVacinalServiceMock = new Mock<ICarteiraVacinalRepository>();
             var loggMock = new Mock<ILogger<CarteiraVacinalsController>>();
             _logger = loggMock.Object;
 

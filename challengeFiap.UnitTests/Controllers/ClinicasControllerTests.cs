@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class ClinicaControllerTests
     {
 
-        private readonly Mock<IClinicaService> _ClinicaServiceMock;
+        private readonly Mock<IClinicaRepository> _ClinicaServiceMock;
 
         private readonly ClinicasController _controller;
         private readonly ILogger<ClinicasController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public ClinicaControllerTests()
         {
-            _ClinicaServiceMock = new Mock<IClinicaService>();
+            _ClinicaServiceMock = new Mock<IClinicaRepository>();
             var loggMock = new Mock<ILogger<ClinicasController>>();
             _logger = loggMock.Object;
 

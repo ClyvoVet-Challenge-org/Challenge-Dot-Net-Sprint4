@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
 {
     public class VeterinariosControllerTests
     {
-        private readonly Mock<IVeterinarioService> _veterinarioServiceMock;
+        private readonly Mock<IVeterinarioRepository> _veterinarioServiceMock;
 
         private readonly VeterinariosController _controller;
         private readonly ILogger<VeterinariosController> _logger;
@@ -25,7 +25,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public VeterinariosControllerTests()
         {
-            _veterinarioServiceMock = new Mock<IVeterinarioService>();
+            _veterinarioServiceMock = new Mock<IVeterinarioRepository>();
             var loggMock = new Mock<ILogger<VeterinariosController>>();
             _logger = loggMock.Object;
 

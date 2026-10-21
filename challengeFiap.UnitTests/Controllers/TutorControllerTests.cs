@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class TutorControllerTests
     {
 
-        private readonly Mock<ItutorService> _TutorServiceMock;
+        private readonly Mock<ItutorRepository> _TutorServiceMock;
 
         private readonly TutorController _controller;
         private readonly ILogger<TutorController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public TutorControllerTests()
         {
-            _TutorServiceMock = new Mock<ItutorService>();
+            _TutorServiceMock = new Mock<ItutorRepository>();
 
             var loggMock = new Mock<ILogger<TutorController>>();
             _logger = loggMock.Object;

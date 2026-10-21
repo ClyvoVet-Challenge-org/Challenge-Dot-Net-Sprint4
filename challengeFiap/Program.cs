@@ -61,7 +61,15 @@ try
             return client.GetDatabase(settings.DatabaseName);
     });
 
-    builder.Services.AddSingleton<MongoDbContext>();
+    builder.Services.AddSingleton<MongoDbContext>(sp =>
+    {
+        var client = sp.GetRequiredService<IMongoClient>();
+
+        var settings = sp.GetRequiredService<
+            IOptions<MongoStoreDataBaseSettings>>().Value;
+
+        return new MongoDbContext(client, settings.DatabaseName);
+    });
 
     //oracle
 

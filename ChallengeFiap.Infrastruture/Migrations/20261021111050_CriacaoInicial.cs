@@ -69,7 +69,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     bairro = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     logradouro_rua = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     nr_rua = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    complemento = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
+                    completo = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     cep = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     id_clinica = table.Column<int>(type: "NUMBER(10)", nullable: false)
                 },
@@ -94,7 +94,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     nr_microchip_animal = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     nm_animal = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     dt_nascimento_animal = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    peso_animal = table.Column<decimal>(type: "DECIMAL(18,2)", precision: 18, scale: 2, nullable: false),
+                    peso_animal = table.Column<decimal>(type: "DECIMAL(5,2)", precision: 5, scale: 2, nullable: false),
                     especie_animal = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     raca_animal = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     id_tutor = table.Column<int>(type: "NUMBER(10)", nullable: false)
@@ -122,7 +122,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     bairro = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     logradouro_rua = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     nr_rua = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    complemento = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
+                    completo = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     cep = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     id_tutor = table.Column<int>(type: "NUMBER(10)", nullable: false)
                 },
@@ -227,7 +227,7 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     bairro = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     logradouro_rua = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     nr_rua = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    complemento = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
+                    completo = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     cep = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     id_animal = table.Column<int>(type: "NUMBER(10)", nullable: false)
                 },

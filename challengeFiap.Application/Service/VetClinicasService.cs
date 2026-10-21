@@ -20,14 +20,14 @@ namespace challengeFiap.Application.Service
 
         public async Task<VetClinica> CreateVetClinicaAsync(VetClinica VetClinica)
         {
-            var created = await  (VetClinica);
+            var created = await  _oracle.CreateVetClinicaAsync(VetClinica);
             await _mongo.CreateVetClinicaAsync(created);
             return created;
         }
 
         public async Task<IEnumerable<VetClinica>> GetAllVetClinicaAsync()
         {
-            var list = await _oracle();
+            var list = await _oracle.GetAllVetClinicaAsync();
             await _mongo.GetAllVetClinicaAsync();
             return list;
         }

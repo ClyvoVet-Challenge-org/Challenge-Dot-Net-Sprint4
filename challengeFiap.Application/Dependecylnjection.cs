@@ -6,6 +6,8 @@ using OpenTelemetry.Trace;
 using challengeFiap.Application.Diagnostics;
 using challengeFiap.Application.Service;
 using challengeFiap.Domain.Interfaces;
+using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
+using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
 
 namespace challengeFiap.Infrastruture
 {
@@ -13,6 +15,32 @@ namespace challengeFiap.Infrastruture
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
+            services.AddScoped<AnimalOracleRepository>();
+            services.AddScoped<CarteiraVacinalOracleRepository>();
+            services.AddScoped<ConsultaOracleRepository>();
+            services.AddScoped<ClinicaOracleRepository>();
+            services.AddScoped<EnderecoAnimalOracleRepository>();
+            services.AddScoped<EnderecoClinicaOracleRepository>();
+            services.AddScoped<EnderecoTutorOracleRepository>();
+            services.AddScoped<MedicamentoOracleRepository>();
+            services.AddScoped<PrescricaoOracleRepository>();
+            services.AddScoped<TutorOracleRepository>();
+            services.AddScoped<VetClinicaOracleRepository>();
+            services.AddScoped<VeterinarioOracleRepository>();
+
+            services.AddScoped<AnimalRepository>();
+            services.AddScoped<CarteiraVacinalRepository>();
+            services.AddScoped<ConsultaRepository>();
+            services.AddScoped<ClinicaRepository>();
+            services.AddScoped<EnderecoAnimalRepository>();
+            services.AddScoped<EnderecoClinicaRepository>();
+            services.AddScoped<EnderecoTutorRepository>();
+            services.AddScoped<MedicamentoRepository>();
+            services.AddScoped<PrescricaoRepository>();
+            services.AddScoped<TutorRepository>();
+            services.AddScoped<VetClinicaRepository>();
+            services.AddScoped<VeterinarioRepository>();
+
             services.AddScoped<IAnimalRepository, AnimalService>();
             services.AddScoped<ICarteiraVacinalRepository, CateiraVacinalService>();
             services.AddScoped<IConsultaRepository, ConsultaService>();

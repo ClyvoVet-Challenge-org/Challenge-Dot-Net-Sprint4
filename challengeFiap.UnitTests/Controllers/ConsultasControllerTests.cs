@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class ConsultasControllerTests
     {
 
-        private readonly Mock<IConsultaService> _ConsultaserviceMock;
+        private readonly Mock<IConsultaRepository> _ConsultaserviceMock;
 
         private readonly ConsultasController _controller;
         private readonly ILogger<ConsultasController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public ConsultasControllerTests()
         {
-            _ConsultaserviceMock = new Mock<IConsultaService>();
+            _ConsultaserviceMock = new Mock<IConsultaRepository>();
             var loggMock = new Mock<ILogger<ConsultasController>>();
             _logger = loggMock.Object;
 

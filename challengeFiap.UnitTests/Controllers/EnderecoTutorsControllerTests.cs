@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class EnderecoTutorsControllerTests
     {
 
-        private readonly Mock<IenderecoTutorService> _enderecoTutorServiceMock;
+        private readonly Mock<IenderecoTutorRepository> _enderecoTutorServiceMock;
 
         private readonly EnderecoTutorsController _controller;
         private readonly ILogger<EnderecoTutorsController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public EnderecoTutorsControllerTests()
         {
-            _enderecoTutorServiceMock = new Mock<IenderecoTutorService>();
+            _enderecoTutorServiceMock = new Mock<IenderecoTutorRepository>();
             var loggMock = new Mock<ILogger<EnderecoTutorsController>>();
             _logger = loggMock.Object;
 

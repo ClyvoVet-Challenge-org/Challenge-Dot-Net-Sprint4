@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class EnderecoenderecoAnimalsControllerTests
     {
 
-        private readonly Mock<IenderecoAnimalService> _enderecoAnimalServiceMock;
+        private readonly Mock<IenderecoAnimalRepository> _enderecoAnimalServiceMock;
 
         private readonly EnderecoAnimalsController _controller;
         private readonly ILogger<EnderecoAnimalsController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public EnderecoenderecoAnimalsControllerTests()
         {
-            _enderecoAnimalServiceMock = new Mock<IenderecoAnimalService>();
+            _enderecoAnimalServiceMock = new Mock<IenderecoAnimalRepository>();
             var loggMock = new Mock<ILogger<EnderecoAnimalsController>>();
             _logger = loggMock.Object;
 

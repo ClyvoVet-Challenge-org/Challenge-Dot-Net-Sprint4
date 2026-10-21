@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class PrescricaosControllerTests
     {
 
-        private readonly Mock<IprescricaoService> _PrescricaosServiceMock;
+        private readonly Mock<IprescricaoRepository> _PrescricaosServiceMock;
 
         private readonly PrescricaosController _controller;
         private readonly ILogger<PrescricaosController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public PrescricaosControllerTests()
         {
-            _PrescricaosServiceMock = new Mock<IprescricaoService>();
+            _PrescricaosServiceMock = new Mock<IprescricaoRepository>();
             var loggMock = new Mock<ILogger<PrescricaosController>>();
             _logger = loggMock.Object;
 

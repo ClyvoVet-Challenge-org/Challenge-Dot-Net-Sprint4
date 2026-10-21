@@ -15,7 +15,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class enderecoClinicasControllerTests
     {
 
-        private readonly Mock<IenderecoClinicaService> _enderecoClinicaServiceMock;
+        private readonly Mock<IenderecoClinicaRepository> _enderecoClinicaServiceMock;
 
         private readonly EnderecoClinicasController _controller;
         private readonly ILogger<EnderecoClinicasController> _logger;
@@ -23,7 +23,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public enderecoClinicasControllerTests()
         {
-            _enderecoClinicaServiceMock = new Mock<IenderecoClinicaService>();
+            _enderecoClinicaServiceMock = new Mock<IenderecoClinicaRepository>();
             var loggMock = new Mock<ILogger<EnderecoClinicasController>>();
             _logger = loggMock.Object;
 
