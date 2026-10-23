@@ -47,10 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"Animal com id {id_animal} não encontrado.");
             }
-            _context.Animals.Remove(existeAnimal);
-
-            await _context.SaveChangesAsync();
-
             return existeAnimal;
         }
 

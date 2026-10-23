@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"Veterinario com id {id_veterinario} não encontrado.");
             }
-            _context.Veterinarios.Remove(vet);
-            await _context.SaveChangesAsync();
             return vet;
         }
 

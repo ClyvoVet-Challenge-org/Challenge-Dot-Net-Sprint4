@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"Tutor com id {id_tutor} não encontrado.");
             }
-            _context.Tutor.Remove(tutor);
-            await _context.SaveChangesAsync();
             return tutor;
         }
 

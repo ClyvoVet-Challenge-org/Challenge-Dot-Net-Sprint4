@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"Prescricao com id {id_prescricao} não encontrado.");
             }
-            _context.Prescricaos.Remove(pres);
-            await _context.SaveChangesAsync();
             return pres;
         }
 

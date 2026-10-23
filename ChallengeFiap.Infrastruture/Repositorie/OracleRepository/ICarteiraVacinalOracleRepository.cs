@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"CarteiraVacinal com id {id_CarteiraVacinal} não encontrado.");
             }
-            _context.CarteiraVacinals.Remove(carteira);
-            await _context.SaveChangesAsync();
             return carteira;
         }
 

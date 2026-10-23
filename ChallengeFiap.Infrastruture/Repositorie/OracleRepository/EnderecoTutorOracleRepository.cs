@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"EnderecoTutor com id {id_endereco} não encontrado.");
             }
-            _context.EnderecoTutors.Remove(endereco);
-            await _context.SaveChangesAsync();
             return endereco;
         }
 

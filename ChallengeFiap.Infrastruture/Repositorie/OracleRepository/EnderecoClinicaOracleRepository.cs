@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"EnderecoClinica com id {id_endereco_clinica} não encontrado.");
             }
-            _context.EnderecoClinicas.Remove(endereco);
-            await _context.SaveChangesAsync();
             return endereco;
         }
 

@@ -48,9 +48,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"VetClinica com id {id_VetClinica} não encontrado.");
             }
-            _context.VetClinicas.Remove(existeVetClinica);
-
-            await _context.SaveChangesAsync();
 
             return existeVetClinica;
         }

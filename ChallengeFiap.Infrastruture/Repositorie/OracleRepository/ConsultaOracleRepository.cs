@@ -47,8 +47,6 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"Consulta com id {id_consulta} não encontrado.");
             }
-            _context.Consultas.Remove(consulta);
-            await _context.SaveChangesAsync();
             return consulta;
         }
 

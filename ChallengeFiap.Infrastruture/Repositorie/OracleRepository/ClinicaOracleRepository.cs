@@ -47,8 +47,7 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
             {
                 throw new KeyNotFoundException($"Clinica com id {id_Clinica} não encontrado.");
             }
-            _context.Clinicas.Remove(clinica);
-            await _context.SaveChangesAsync();
+
             return clinica;
         }
 
