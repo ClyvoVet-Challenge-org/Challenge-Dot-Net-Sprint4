@@ -1,15 +1,12 @@
 ﻿using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
-using challengeFiap.Application.Interfaces;
+using challengeFiap.Application.InterfacesService;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace challengeFiap.UnitTests.Controllers
 {

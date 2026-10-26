@@ -1,6 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
-using challengeFiap.Application.Interfaces;
+using challengeFiap.Application.InterfacesService;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

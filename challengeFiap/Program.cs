@@ -1,18 +1,13 @@
-using challengeFiap.Application.Service;
-using challengeFiap.Domain.Interfaces;
 using challengeFiap.Infrastruture;
 using challengeFiap.Infrastruture.Data;
 using ChallengeFiap.Infrastruture.Data;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
-using System.Security.Cryptography.X509Certificates;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)

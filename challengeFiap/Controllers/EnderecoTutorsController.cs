@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using challengeFiap.Application.Interfaces;
+using challengeFiap.Application.InterfacesService;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
-using challengeFiap.Domain.Interfaces;
 using challengeFiap.Domain;
 using challengeFiap.Domain.Dto;
-using Microsoft.AspNetCore.Components.Forms;
 
 [Route("api/[controller]")]
 [ApiController]

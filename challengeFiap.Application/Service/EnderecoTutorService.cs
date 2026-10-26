@@ -1,11 +1,9 @@
 ﻿
 using challengeFiap.Domain.Entities;
-using challengeFiap.Application.Interfaces;
-using challengeFiap.Domain.Interfaces;
-using challengeFiap.Domain.Interfaces.MongoRepository;
-using challengeFiap.Domain.Interfaces.OracleRepository;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using challengeFiap.Application.InterfacesService;
+using challengeFiap.Infrastruture.Interfaces.MongoRepository;
+using challengeFiap.Infrastruture.Interfaces.OracleRepository;
+
 
 namespace challengeFiap.Application.Service
 {
