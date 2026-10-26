@@ -2,7 +2,10 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,9 +13,9 @@ public class EnderecoClinicasController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<EnderecoClinicasController> _logger;
-    private readonly IenderecoClinicaRepository _enderecoClinicaService;
+    private readonly IEnderecoClinicaService _enderecoClinicaService;
 
-    public EnderecoClinicasController(AppDbContext context, ILogger<EnderecoClinicasController> logger, IenderecoClinicaRepository enderecoClinicaService)
+    public EnderecoClinicasController(AppDbContext context, ILogger<EnderecoClinicasController> logger, IEnderecoClinicaService enderecoClinicaService)
     {
         _context = context;
         _logger = logger;
@@ -27,17 +30,20 @@ public class EnderecoClinicasController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio endereço clinica</returns>
     [HttpGet]
-    [Route("relatorio/enderecoclinica")]
-    public async Task<ActionResult<IEnumerable<EnderecoClinica>>> GetAllEnderecoClinica()
+    [Route("relatorio/enderecoclinica", Name = "GetAllEnderecosClinicas")]
+    public async Task<ActionResult<IEnumerable<EnderecoClinicaDTO>>> GetAllEnderecoClinica()
     {
         _logger.LogInformation("Iniciando a busca de endereço clinica");
 
         try
         {
             var relatorioEnClinica = await _enderecoClinicaService.GetAllEnderecoClinicaAsync();
+            var enderecoClinicaDtos = relatorioEnClinica
+                .Select(endereco => CreateEnderecoClinicaDto(endereco))
+                .ToList();
 
             _logger.LogInformation("Busca de endereço clinica concluída com sucesso");
-            return Ok(relatorioEnClinica);
+            return Ok(enderecoClinicaDtos);
         }
         catch (Exception ex)
         {
@@ -56,8 +62,8 @@ public class EnderecoClinicasController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/enderecoclinica/{id_endereco_clinica:int}")]
-    public async Task<ActionResult<EnderecoClinica>> GetEnderecoClinica(int id_endereco_clinica)
+    [Route("relatorio/enderecoclinica/{id_endereco_clinica:int}", Name = "GetEnderecosClinicasById")]
+    public async Task<ActionResult<EnderecoClinicaDTO>> GetEnderecoClinica(int id_endereco_clinica)
     {
         _logger.LogInformation("Iniciando a busca de endereço clinica com ID");
 
@@ -67,7 +73,8 @@ public class EnderecoClinicasController : ControllerBase
             {
                 var enderecoclinica = await _enderecoClinicaService.GetEnderecoClinicaIdAsync(id_endereco_clinica);
                 _logger.LogInformation("Endereço clinica foi encontrado com sucesso");
-                return Ok(enderecoclinica);
+                var enderecoClinicaDto = CreateEnderecoClinicaDto(enderecoclinica);
+                return Ok(enderecoClinicaDto);
             }
             catch (Exception ex)
             {
@@ -95,7 +102,7 @@ public class EnderecoClinicasController : ControllerBase
     /// <response code="404">Endereço clinica não encontrado</response>
     /// <returns>Atualizar: </returns>
     [HttpPut]
-    [Route("atualizar/enderecoclinica/{id_endereco_clinica:int}")]
+    [Route("atualizar/enderecoclinica/{id_endereco_clinica:int}", Name = "UpdateEnderecoClinica")]
     public async Task<IActionResult> PutEnderecoClinica(int id_endereco_clinica, EnderecoClinica enderecoclinica)
     {
         _logger.LogInformation("Iniciando atualização de endereço clinica com ID: {IdEnderecoClinica}", id_endereco_clinica);
@@ -110,10 +117,6 @@ public class EnderecoClinicasController : ControllerBase
         try
         {
             var enderecoClinicaAtualizado = await _enderecoClinicaService.UpdateEnderecoClinicaAsync(id_endereco_clinica, enderecoclinica);
-
-            _context.Entry(enderecoClinicaAtualizado).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Atualização de endereço clinica concluída com sucesso. ID: {IdEnderecoClinica}", id_endereco_clinica);
 
@@ -167,10 +170,6 @@ public class EnderecoClinicasController : ControllerBase
             {
                 var enderecoClinicaCriado = await _enderecoClinicaService.CreateEnderecoClinicaAsync(enderecoclinica);
 
-                _context.EnderecoClinicas.Add(enderecoClinicaCriado);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Endereço clinica criado com sucesso.");
 
                 return Ok(enderecoClinicaCriado);
@@ -202,17 +201,14 @@ public class EnderecoClinicasController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>Deletado: </returns>
     [HttpDelete]
-    [Route("deleta/enderecoclinica/{id_endereco_clinica:int}")]
+    [Route("deleta/enderecoclinica/{id_endereco_clinica:int}", Name = "DeletaEnderecoClinica")]
     public async Task<IActionResult> DeleteEnderecoClinica(int id_endereco_clinica)
     {
         _logger.LogInformation("Iniciando remoção de endereço clinica");
 
         try
         {
-            var enderecoclinica = await _enderecoClinicaService.DeleteEnderecoClinicaAsync(id_endereco_clinica);
-
-            _context.EnderecoClinicas.Remove(enderecoclinica);
-            await _context.SaveChangesAsync();
+            await _enderecoClinicaService.DeleteEnderecoClinicaAsync(id_endereco_clinica);
 
             _logger.LogInformation("EnderecoClinica foi excluído com sucesso");
 
@@ -224,5 +220,33 @@ public class EnderecoClinicasController : ControllerBase
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
 
+    }
+
+    private EnderecoClinicaDTO CreateEnderecoClinicaDto(EnderecoClinica enderecoClinica)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetEnderecosClinicasById", new { id_endereco_clinica = enderecoClinica.Id_endereco_clinica })!,
+                "self",
+                "GET"),
+
+            new LinkDTO(
+                Url.Link("GetAllEnderecosClinicas", null)!,
+                "collection",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("UpdateEnderecoClinica", new { id_endereco_clinica = enderecoClinica.Id_endereco_clinica })!,
+                "update",
+                "PUT"),
+            
+            new LinkDTO(
+                Url.Link("DeletaEnderecoClinica", new { id_endereco_clinica = enderecoClinica.Id_endereco_clinica })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new EnderecoClinicaDTO(enderecoClinica, links);
     }
 }

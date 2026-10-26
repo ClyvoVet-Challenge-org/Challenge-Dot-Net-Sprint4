@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class PrescricaosControllerTests
     {
 
-        private readonly Mock<IprescricaoRepository> _PrescricaosServiceMock;
+        private readonly Mock<IPrescricaoService> _PrescricaosServiceMock;
 
         private readonly PrescricaosController _controller;
         private readonly ILogger<PrescricaosController> _logger;
@@ -23,7 +24,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public PrescricaosControllerTests()
         {
-            _PrescricaosServiceMock = new Mock<IprescricaoRepository>();
+            _PrescricaosServiceMock = new Mock<IPrescricaoService>();
             var loggMock = new Mock<ILogger<PrescricaosController>>();
             _logger = loggMock.Object;
 
@@ -33,6 +34,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new PrescricaosController(_context, _logger, _PrescricaosServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
        
@@ -131,7 +136,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<Prescricao>>(okResult.Value);
+            var returnedList = Assert.IsType<List<PrescricaoDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -159,10 +164,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedPrescricao = Assert.IsType<Prescricao>(okResult.Value);
+            var returnedPrescricao = Assert.IsType<PrescricaoDTO>(okResult.Value);
 
             Assert.NotNull(returnedPrescricao);
-            Assert.Equal(id_prescricao, returnedPrescricao.Id_prescricao);
+            Assert.Equal(id_prescricao, returnedPrescricao.Prescricao.Id_prescricao);
+            Assert.Equal(4, returnedPrescricao.Dto.Count);
         }
 
         [Fact]

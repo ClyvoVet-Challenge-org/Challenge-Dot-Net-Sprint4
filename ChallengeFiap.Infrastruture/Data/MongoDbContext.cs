@@ -1,4 +1,6 @@
-﻿using MongoDB.Bson;
+using challengeFiap.Domain.Entities;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ namespace ChallengeFiap.Infrastruture.Data
 {
     public class MongoDbContext
     {
+        private static readonly object ClassMapLock = new();
         private readonly IMongoClient _client;
 
         private readonly IMongoDatabase _database;
@@ -17,6 +20,7 @@ namespace ChallengeFiap.Infrastruture.Data
             _client = client;
             _database = _client.GetDatabase(databaseName);
 
+            RegisterMongoEntityClassMaps();
 
             try
             {
@@ -34,5 +38,37 @@ namespace ChallengeFiap.Infrastruture.Data
         {
             return _database.GetCollection<T>(collectionName);
         }
+
+        private static void RegisterMongoEntityClassMaps()
+        {
+            RegisterIgnoreExtraElements<Animal>();
+            RegisterIgnoreExtraElements<CarteiraVacinal>();
+            RegisterIgnoreExtraElements<Clinica>();
+            RegisterIgnoreExtraElements<Consulta>();
+            RegisterIgnoreExtraElements<EnderecoAnimal>();
+            RegisterIgnoreExtraElements<EnderecoClinica>();
+            RegisterIgnoreExtraElements<EnderecoTutor>();
+            RegisterIgnoreExtraElements<Medicamento>();
+            RegisterIgnoreExtraElements<Prescricao>();
+            RegisterIgnoreExtraElements<Tutor>();
+            RegisterIgnoreExtraElements<VetClinica>();
+            RegisterIgnoreExtraElements<Veterinario>();
+        }
+
+        private static void RegisterIgnoreExtraElements<T>() where T : class
+        {
+            lock (ClassMapLock)
+            {
+                if (!BsonClassMap.IsClassMapRegistered(typeof(T)))
+                {
+                    BsonClassMap.RegisterClassMap<T>(classMap =>
+                    {
+                        classMap.AutoMap();
+                        classMap.SetIgnoreExtraElements(true);
+                    });
+                }
+            }
+        }
+
     }
 }

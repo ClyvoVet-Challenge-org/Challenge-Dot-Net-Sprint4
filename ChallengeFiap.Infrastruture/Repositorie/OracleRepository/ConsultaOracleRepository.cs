@@ -1,5 +1,6 @@
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
 {
-    public class ConsultaOracleRepository : IConsultaRepository
+    public class ConsultaOracleRepository : IConsultaOracleRepository
     {
         private readonly AppDbContext _context;
 

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,8 +13,8 @@ public class PrescricaosController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<PrescricaosController> _logger;
-    private readonly IprescricaoRepository _prescricaoService;
-    public PrescricaosController(AppDbContext context, ILogger<PrescricaosController> logger, IprescricaoRepository prescricaoService)
+    private readonly IPrescricaoService _prescricaoService;
+    public PrescricaosController(AppDbContext context, ILogger<PrescricaosController> logger, IPrescricaoService prescricaoService)
     {
         _context = context;
         _logger = logger;
@@ -26,17 +29,20 @@ public class PrescricaosController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio prescrição</returns>
     [HttpGet]
-    [Route("relatorio/prescricao")]
-    public async Task<ActionResult<IEnumerable<Prescricao>>> GetAllPrescricao()
+    [Route("relatorio/prescricao", Name = "GetAllPrescricoes")]
+    public async Task<ActionResult<IEnumerable<PrescricaoDTO>>> GetAllPrescricao()
     {
         _logger.LogInformation("Iniciando a busca de prescrições");
 
         try
         {
             var prescricaoRelatorio = await _prescricaoService.GetAllPrescricaoAsync();
+            var prescricaoDtos = prescricaoRelatorio
+                .Select(prescricao => CreatePrescricaoDto(prescricao))
+                .ToList();
 
             _logger.LogInformation("Busca de prescrições concluída com sucesso");
-            return Ok(prescricaoRelatorio);
+            return Ok(prescricaoDtos);
         }
         catch (Exception ex)
         {
@@ -55,8 +61,8 @@ public class PrescricaosController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/prescricao/{id_prescricao:int}")]
-    public async Task<ActionResult<Prescricao>> GetPrescricao(int id_prescricao)
+    [Route("relatorio/prescricao/{id_prescricao:int}", Name = "GetPrescricoesById")]
+    public async Task<ActionResult<PrescricaoDTO>> GetPrescricao(int id_prescricao)
     {
         _logger.LogInformation("Iniciando a busca da prescrição");
 
@@ -66,7 +72,8 @@ public class PrescricaosController : ControllerBase
             {
                 var prescricao = await _prescricaoService.GetPrescricaoIdAsync(id_prescricao);
                 _logger.LogInformation("Prescricao foi encontrada com sucesso");
-                return Ok(prescricao);
+                var precricaoDTO = CreatePrescricaoDto(prescricao);
+                return Ok(precricaoDTO);
             }
             catch (Exception ex)
             {
@@ -94,7 +101,7 @@ public class PrescricaosController : ControllerBase
     /// <response code="404">Prescrição não encontrado</response>
     /// <returns></returns>
     [HttpPut]
-    [Route("atualizar/prescricao/{id_prescricao:int}")]
+    [Route("atualizar/prescricao/{id_prescricao:int}", Name = "UpdatePrescricao")]
     public async Task<IActionResult> PutPrescricao(int id_prescricao, Prescricao prescricao)
     {
         _logger.LogInformation("Iniciando a atualização da prescrição");
@@ -108,10 +115,6 @@ public class PrescricaosController : ControllerBase
         try
         {
             var prescricaoAtualizada = await _prescricaoService.UpdatePrescricaoAsync(id_prescricao, prescricao);
-
-            _context.Entry(prescricaoAtualizada).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Prescrição atualizada com sucesso");
             return Ok(prescricaoAtualizada);
@@ -162,10 +165,6 @@ public class PrescricaosController : ControllerBase
             {
                 var prescricaoCriada = await _prescricaoService.CreatePrescricaoAsync(prescricao);
 
-                _context.Prescricaos.Add(prescricaoCriada);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Prescrição criada com sucesso.");
                 return Ok(prescricaoCriada);
             }
@@ -194,17 +193,14 @@ public class PrescricaosController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>Deletado: </returns>
     [HttpDelete]
-    [Route("deleta/prescricao/{id_prescricao:int}")]
+    [Route("deleta/prescricao/{id_prescricao:int}", Name = "DeletaPrescricao")]
     public async Task<IActionResult> DeletePrescricao(int id_prescricao)
     {
         _logger.LogInformation("Iniciando a exclusão da prescrição ");
 
         try
         {
-            var prescricao = await _prescricaoService.DeletePrescricaoAsync(id_prescricao);
-
-            _context.Prescricaos.Remove(prescricao);
-            await _context.SaveChangesAsync();
+            await _prescricaoService.DeletePrescricaoAsync(id_prescricao);
 
             _logger.LogInformation("Prescricao foi excluída com sucesso");
             return NoContent();
@@ -215,5 +211,33 @@ public class PrescricaosController : ControllerBase
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
 
+    }
+
+    private PrescricaoDTO CreatePrescricaoDto(Prescricao prescricao)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetPrescricoesById", new { id_prescricao = prescricao.Id_prescricao })!,
+                "self",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("GetAllPrescricoes", null)!,
+                "collection",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("UpdatePrescricao", new { id_prescricao = prescricao.Id_prescricao })!,
+                "update",
+                "PUT"),
+            
+            new LinkDTO(
+                Url.Link("DeletaPrescricao", new { id_prescricao = prescricao.Id_prescricao })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new PrescricaoDTO(prescricao, links);
     }
 }

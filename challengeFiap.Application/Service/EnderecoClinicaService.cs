@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class EnderecoClinicaService : IenderecoClinicaRepository
+    public class EnderecoClinicaService : IEnderecoClinicaService
     {
-        private readonly EnderecoClinicaOracleRepository _oracle;
-        private readonly EnderecoClinicaRepository _mongo;
+        private readonly IEnderecoClinicaOracleRepository _oracle;
+        private readonly IEnderecoClinicaMongoRepository _mongo;
 
-        public EnderecoClinicaService(EnderecoClinicaOracleRepository oracle, EnderecoClinicaRepository mongo)
+        public EnderecoClinicaService(IEnderecoClinicaOracleRepository oracle, IEnderecoClinicaMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +28,31 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<EnderecoClinica>> GetAllEnderecoClinicaAsync()
         {
-            var list = await _oracle.GetAllEnderecoClinicaAsync();
-            await _mongo.GetAllEnderecoClinicaAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllEnderecoClinicaAsync();
+            var mongoItems = await _mongo.GetAllEnderecoClinicaAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_endereco_clinica);
         }
 
         public async Task<EnderecoClinica> GetEnderecoClinicaIdAsync(int id_endereco_clinica)
         {
-            var item = await _oracle.GetEnderecoClinicaIdAsync(id_endereco_clinica);
-            await _mongo.GetEnderecoClinicaIdAsync(id_endereco_clinica);
-            return item;
+            try
+            {
+                var oracleItem = await _oracle.GetEnderecoClinicaIdAsync(id_endereco_clinica);
+                try
+                {
+                    await _mongo.GetEnderecoClinicaIdAsync(id_endereco_clinica);
+                }
+                catch (KeyNotFoundException)
+                {
+                    // Prefer the Oracle record when MongoDB does not contain its copy.
+                }
+                return oracleItem;
+            }
+            catch (KeyNotFoundException)
+            {
+                return await _mongo.GetEnderecoClinicaIdAsync(id_endereco_clinica);
+            }
         }
 
         public async Task<EnderecoClinica> UpdateEnderecoClinicaAsync(int id_endereco_clinica, EnderecoClinica enderecoClinica)
@@ -54,4 +70,3 @@ namespace challengeFiap.Application.Service
         }
     }
 }
-

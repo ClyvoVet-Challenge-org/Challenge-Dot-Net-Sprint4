@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class VetClinicasService : IVetClinica
+    public class VetClinicasService : IVetClinicaService
     {
-        private readonly VetClinicaOracleRepository _oracle;
-        private readonly VetClinicaRepository _mongo;
+        private readonly IVetClinicaOracleRepository _oracle;
+        private readonly IVetClinicaMongoRepository _mongo;
 
-        public VetClinicasService(VetClinicaOracleRepository oracle, VetClinicaRepository mongo)
+        public VetClinicasService(IVetClinicaOracleRepository oracle, IVetClinicaMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +28,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<VetClinica>> GetAllVetClinicaAsync()
         {
-            var list = await _oracle.GetAllVetClinicaAsync();
-            await _mongo.GetAllVetClinicaAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllVetClinicaAsync();
+            var mongoItems = await _mongo.GetAllVetClinicaAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_clinica_vet);
         }
 
-        public async Task<VetClinica> GetVetClinicaIdAsync(int id_VetClinica)
+        public Task<VetClinica> GetVetClinicaIdAsync(int id_VetClinica)
         {
-            var item = await _oracle.GetVetClinicaIdAsync(id_VetClinica);
-            await _mongo.GetVetClinicaIdAsync(id_VetClinica);
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetVetClinicaIdAsync(id_VetClinica),
+                () => _mongo.GetVetClinicaIdAsync(id_VetClinica));
         }
 
         public async Task<VetClinica> UpdateVetClinicaAsync(int id_VetClinica, VetClinica VetClinica)
@@ -54,5 +56,3 @@ namespace challengeFiap.Application.Service
         }
     }
 }
-
-

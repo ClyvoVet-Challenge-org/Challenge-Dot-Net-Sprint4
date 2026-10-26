@@ -27,47 +27,47 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_animal")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_animal");
+                        .HasColumnName("ID_ANIMAL");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_animal"));
 
                     b.Property<DateTime>("Dt_nascimento_animal")
                         .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("dt_nascimento_animal");
+                        .HasColumnName("DT_NASCIMENTO_ANIMAL");
 
                     b.Property<string>("Especie_animal")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("especie_animal");
+                        .HasColumnName("ESPECIE_ANIMAL");
 
                     b.Property<int>("Id_tutor")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_tutor");
+                        .HasColumnName("ID_TUTOR");
 
                     b.Property<string>("Nm_animal")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nm_animal");
+                        .HasColumnName("NM_ANIMAL");
 
                     b.Property<string>("Nr_microchip_animal")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nr_microchip_animal");
+                        .HasColumnName("NR_MICROCHIP_ANIMAL");
 
                     b.Property<decimal>("Peso_animal")
                         .HasPrecision(5, 2)
                         .HasColumnType("DECIMAL(5,2)")
-                        .HasColumnName("peso_animal");
+                        .HasColumnName("PESO_ANIMAL");
 
                     b.Property<string>("Raca_animal")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("raca_animal");
+                        .HasColumnName("RACA_ANIMAL");
 
                     b.Property<string>("Rg_animal")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("rg_animal");
+                        .HasColumnName("RG_ANIMAL");
 
                     b.HasKey("Id_animal");
 
@@ -81,31 +81,31 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_carteiraVacinal")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_carteiravacinal");
+                        .HasColumnName("ID_CARTEIRAVACINAL");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_carteiraVacinal"));
 
                     b.Property<DateTime>("Dt_vacina_efetuada")
                         .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("dt_vacinacao_efetuada");
+                        .HasColumnName("DT_VACINACAO_EFETUADA");
 
                     b.Property<DateTime>("Dt_vacina_prevista")
                         .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("dt_vacinacao_prevista");
+                        .HasColumnName("DT_VACINACAO_PREVISTA");
 
                     b.Property<int>("Id_animal")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_animal");
+                        .HasColumnName("ID_ANIMAL");
 
                     b.Property<string>("Nm_vacina")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nm_vacina");
+                        .HasColumnName("NM_VACINA");
 
                     b.Property<string>("St_vacina")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("st_vacinacao");
+                        .HasColumnName("ST_VACINACAO");
 
                     b.HasKey("Id_carteiraVacinal");
 
@@ -119,19 +119,19 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_clinica")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_clinica");
+                        .HasColumnName("ID_CLINICA");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_clinica"));
 
                     b.Property<string>("Cnpj_clinica")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cnpj_clinica");
+                        .HasColumnName("CNPJ_CLINICA");
 
                     b.Property<string>("Nm_clinica")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nm_clinica");
+                        .HasColumnName("NM_CLINICA");
 
                     b.HasKey("Id_clinica");
 
@@ -143,31 +143,31 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_consulta")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_consulta");
+                        .HasColumnName("ID_CONSULTA");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_consulta"));
 
                     b.Property<DateTime>("Dt_consulta")
                         .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("dt_consulta");
+                        .HasColumnName("DT_CONSULTA");
 
                     b.Property<string>("Historico_consulta")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("historico_consulta");
+                        .HasColumnName("HISTORICO_CONSULTA");
 
                     b.Property<int>("Id_animal")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_animal");
+                        .HasColumnName("ID_ANIMAL");
 
                     b.Property<int>("Id_vet")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_vet");
+                        .HasColumnName("ID_VET");
 
                     b.Property<string>("St_consulta")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("st_consulta");
+                        .HasColumnName("ST_CONSULTA");
 
                     b.HasKey("Id_consulta");
 
@@ -183,53 +183,53 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_endereco_animal")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_endereco_animal");
+                        .HasColumnName("ID_ENDERECO_ANIMAL");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_endereco_animal"));
 
                     b.Property<string>("Bairro")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("bairro");
+                        .HasColumnName("BAIRRO");
 
                     b.Property<string>("Cep")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cep");
+                        .HasColumnName("CEP");
 
                     b.Property<string>("Cidade")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cidade");
+                        .HasColumnName("CIDADE");
 
                     b.Property<string>("Complemento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("completo");
+                        .HasColumnName("COMPLETO");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("estado");
+                        .HasColumnName("ESTADO");
 
                     b.Property<int>("Id_animal")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_animal");
+                        .HasColumnName("ID_ANIMAL");
 
                     b.Property<string>("Logradouro_rua")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("logradouro_rua");
+                        .HasColumnName("LOGRADOURO_RUA");
 
                     b.Property<string>("Nr_rua")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nr_rua");
+                        .HasColumnName("NR_RUA");
 
                     b.Property<string>("Pais")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("pais");
+                        .HasColumnName("PAIS");
 
                     b.HasKey("Id_endereco_animal");
 
@@ -244,53 +244,53 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_endereco_clinica")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_endereco_clinica");
+                        .HasColumnName("ID_ENDERECO_CLINICA");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_endereco_clinica"));
 
                     b.Property<string>("Bairro")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("bairro");
+                        .HasColumnName("BAIRRO");
 
                     b.Property<string>("Cep")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cep");
+                        .HasColumnName("CEP");
 
                     b.Property<string>("Cidade")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cidade");
+                        .HasColumnName("CIDADE");
 
                     b.Property<string>("Complemento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("completo");
+                        .HasColumnName("COMPLETO");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("estado");
+                        .HasColumnName("ESTADO");
 
                     b.Property<int>("Id_clinica")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_clinica");
+                        .HasColumnName("ID_CLINICA");
 
                     b.Property<string>("Logradouro_rua")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("logradouro_rua");
+                        .HasColumnName("LOGRADOURO_RUA");
 
                     b.Property<string>("Nr_rua")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nr_rua");
+                        .HasColumnName("NR_RUA");
 
                     b.Property<string>("Pais")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("pais");
+                        .HasColumnName("PAIS");
 
                     b.HasKey("Id_endereco_clinica");
 
@@ -305,53 +305,53 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_endereco_tutor")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_endereco_tutor");
+                        .HasColumnName("ID_ENDERECO_TUTOR");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_endereco_tutor"));
 
                     b.Property<string>("Bairro")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("bairro");
+                        .HasColumnName("BAIRRO");
 
                     b.Property<string>("Cep")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cep");
+                        .HasColumnName("CEP");
 
                     b.Property<string>("Cidade")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("cidade");
+                        .HasColumnName("CIDADE");
 
                     b.Property<string>("Complemento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("completo");
+                        .HasColumnName("COMPLETO");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("estado");
+                        .HasColumnName("ESTADO");
 
                     b.Property<int>("Id_tutor")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_tutor");
+                        .HasColumnName("ID_TUTOR");
 
                     b.Property<string>("Logradouro_rua")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("logradouro_rua");
+                        .HasColumnName("LOGRADOURO_RUA");
 
                     b.Property<string>("Nr_rua")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nr_rua");
+                        .HasColumnName("NR_RUA");
 
                     b.Property<string>("Pais")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("pais");
+                        .HasColumnName("PAIS");
 
                     b.HasKey("Id_endereco_tutor");
 
@@ -366,32 +366,32 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_medicamento")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_medicamento");
+                        .HasColumnName("ID_MEDICAMENTO");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_medicamento"));
 
                     b.Property<string>("Dosagem_medicamento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("dosagem_medicamento");
+                        .HasColumnName("DOSAGEM_MEDICAMENTO");
 
                     b.Property<string>("Frequencia")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("frequencia");
+                        .HasColumnName("FREQUENCIA");
 
                     b.Property<int>("Id_prescricao")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_prescricao");
+                        .HasColumnName("ID_PRESCRICAO");
 
                     b.Property<string>("Nm_medicamento")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nm_medicamento");
+                        .HasColumnName("NM_MEDICAMENTO");
 
                     b.Property<int>("Qtd_dias")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("qtd_dias");
+                        .HasColumnName("QTD_DIAS");
 
                     b.HasKey("Id_medicamento");
 
@@ -405,26 +405,26 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_prescricao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_prescricao");
+                        .HasColumnName("ID_PRESCRICAO");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_prescricao"));
 
                     b.Property<DateTime>("Dt_emissao")
                         .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("dt_emissao");
+                        .HasColumnName("DT_EMISSAO");
 
                     b.Property<DateTime>("Dt_expiracao")
                         .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("dt_expiracao");
+                        .HasColumnName("DT_EXPIRACAO");
 
                     b.Property<int>("Id_consulta")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_consulta");
+                        .HasColumnName("ID_CONSULTA");
 
                     b.Property<string>("Observacoes_gerais")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("observacoes_gerais");
+                        .HasColumnName("OBSERVACOES_GERAIS");
 
                     b.HasKey("Id_prescricao");
 
@@ -439,30 +439,30 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_tutor")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_tutor");
+                        .HasColumnName("ID_TUTOR");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_tutor"));
 
                     b.Property<string>("Cpf_tutor")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("cpf_tutor");
+                        .HasColumnName("CPF_TUTOR");
 
                     b.Property<string>("Nm_tutor")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nm_tutor");
+                        .HasColumnName("NM_TUTOR");
 
                     b.Property<string>("Nr_telefone_tutor")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nr_telefone_tutor");
+                        .HasColumnName("NR_TELEFONE_TUTOR");
 
                     b.HasKey("Id_tutor");
 
                     b.HasIndex("Cpf_tutor")
                         .IsUnique()
-                        .HasDatabaseName("cpf_tutor");
+                        .HasDatabaseName("CPF_TUTOR");
 
                     b.ToTable("T_CLYVO_TUTOR", (string)null);
                 });
@@ -472,17 +472,17 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_clinica_vet")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_clinica_vet");
+                        .HasColumnName("ID_CLINICA_VET");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_clinica_vet"));
 
                     b.Property<int>("Id_clinica")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_clinica");
+                        .HasColumnName("ID_CLINICA");
 
                     b.Property<int>("Id_vet")
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_vet");
+                        .HasColumnName("ID_VET");
 
                     b.HasKey("Id_clinica_vet");
 
@@ -498,44 +498,44 @@ namespace ChallengeFiap.Infrastruture.Migrations
                     b.Property<int>("Id_vet")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("NUMBER(10)")
-                        .HasColumnName("id_vet");
+                        .HasColumnName("ID_VET");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_vet"));
 
                     b.Property<string>("Cpf_vet")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("cpf_vet");
+                        .HasColumnName("CPF_VET");
 
                     b.Property<string>("Crmv_vet")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("crmv_vet");
+                        .HasColumnName("CRMV_VET");
 
                     b.Property<string>("Email_vet")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("email");
+                        .HasColumnName("EMAIL");
 
                     b.Property<string>("Nm_vet")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("nm_vet");
+                        .HasColumnName("NM_VET");
 
                     b.Property<string>("Senha_vet")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("senha");
+                        .HasColumnName("SENHA");
 
                     b.HasKey("Id_vet");
 
                     b.HasIndex("Cpf_vet")
                         .IsUnique()
-                        .HasDatabaseName("cpf_vet");
+                        .HasDatabaseName("CPF_VET");
 
                     b.HasIndex("Crmv_vet")
                         .IsUnique()
-                        .HasDatabaseName("crmv_vet");
+                        .HasDatabaseName("CRMV_VET");
 
                     b.ToTable("T_CLYVO_VET", (string)null);
                 });

@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class TutorControllerTests
     {
 
-        private readonly Mock<ItutorRepository> _TutorServiceMock;
+        private readonly Mock<ITutorService> _TutorServiceMock;
 
         private readonly TutorController _controller;
         private readonly ILogger<TutorController> _logger;
@@ -23,7 +24,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public TutorControllerTests()
         {
-            _TutorServiceMock = new Mock<ItutorRepository>();
+            _TutorServiceMock = new Mock<ITutorService>();
 
             var loggMock = new Mock<ILogger<TutorController>>();
             _logger = loggMock.Object;
@@ -35,6 +36,10 @@ namespace challengeFiap.UnitTests.Controllers
 
 
             _controller = new TutorController(_context, _logger, _TutorServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -115,7 +120,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<Tutor>>(okResult.Value);
+            var returnedList = Assert.IsType<List<TutorDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -142,10 +147,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedTutor = Assert.IsType<Tutor>(okResult.Value);
+            var returnedTutor = Assert.IsType<TutorDTO>(okResult.Value);
 
             Assert.NotNull(returnedTutor);
-            Assert.Equal(id_tutor, returnedTutor.Id_tutor);
+            Assert.Equal(id_tutor, returnedTutor.Tutor.Id_tutor);
+            Assert.Equal(4, returnedTutor.Dto.Count);
         }
 
         [Fact]

@@ -1,5 +1,6 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
 using challengeFiap.Domain.Entities;
+using challengeFiap.Domain.Dto;
 using System;
 using System.Net;
 using System.Net.Http.Json;
@@ -107,10 +108,11 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var animal = await response.Content.ReadFromJsonAsync<Animal>();
+            var animal = await response.Content.ReadFromJsonAsync<AnimalDTO>();
 
             Assert.NotNull(animal);
-            Assert.Equal(id_animal, animal.Id_animal);
+            Assert.Equal(id_animal, animal.Animal.Id_animal);
+            Assert.Contains(animal.Dto, link => link.Rel == "self" && link.Method == "GET");
         }
 
         [Fact]
@@ -124,9 +126,11 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var animals = await response.Content.ReadFromJsonAsync<List<Animal>>();
+            var animals = await response.Content.ReadFromJsonAsync<List<AnimalDTO>>();
 
             Assert.NotNull(animals);
+            Assert.All(animals, item =>
+                Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
         [Fact]

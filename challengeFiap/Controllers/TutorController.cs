@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,9 +13,8 @@ public class TutorController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<TutorController> _logger;
-    private readonly ItutorRepository _tutorService;
-
-    public TutorController(AppDbContext context, ILogger<TutorController> logger, ItutorRepository tutorService)
+    private readonly ITutorService _tutorService;
+    public TutorController(AppDbContext context, ILogger<TutorController> logger, ITutorService tutorService)
     {
         _context = context;
         _logger = logger;
@@ -27,17 +29,20 @@ public class TutorController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/Tutor")]
-    public async Task<ActionResult<IEnumerable<Tutor>>> GetAllTutor()
+    [Route("relatorio/Tutor", Name = "GetAllTutores")]
+    public async Task<ActionResult<IEnumerable<TutorDTO>>> GetAllTutor()
     {
         _logger.LogInformation("Iniciando a busca de tutores");
 
         try
         {
             var TutorRelatorio = await _tutorService.GetAllTutorAsync();
+            var tutorDtos = TutorRelatorio
+                .Select(tutor => CreateTutorDto(tutor))
+                .ToList();
 
             _logger.LogInformation("Busca de tutores concluída com sucesso");
-            return Ok(TutorRelatorio);
+            return Ok(tutorDtos);
         }
         catch (Exception ex)
         {
@@ -56,8 +61,8 @@ public class TutorController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/Tutor/{id_Tutor:int}")]
-    public async Task<ActionResult<Tutor>> GetTutor(int id_Tutor)
+    [Route("relatorio/Tutor/{id_Tutor:int}", Name = "GetTutoresById")]
+    public async Task<ActionResult<TutorDTO>> GetTutor(int id_Tutor)
     {
         _logger.LogInformation("Iniciando a busca do tutor pelo ID {IdTutor}", id_Tutor);
 
@@ -67,7 +72,8 @@ public class TutorController : ControllerBase
             {
                 var Tutor = await _tutorService.GetTutorIdAsync(id_Tutor);
                 _logger.LogInformation("Tutor foi encontrado com sucesso");
-                return Ok(Tutor);
+                var tutorDto = CreateTutorDto(Tutor);
+                return Ok(tutorDto);
             }
             catch (Exception ex)
             {
@@ -95,7 +101,7 @@ public class TutorController : ControllerBase
     /// <response code="404">Tutor não encontrado</response>
     /// <returns>Atualizar: </returns>
     [HttpPut]
-    [Route("atualizar/Tutor/{id_Tutor:int}")]
+    [Route("atualizar/Tutor/{id_Tutor:int}", Name = "UpdateTutor")]
     public async Task<IActionResult> PutTutor(int id_Tutor, Tutor Tutor)
     {
         _logger.LogInformation("Iniciando a atualização do tutor");
@@ -119,10 +125,6 @@ public class TutorController : ControllerBase
             }
 
             var tutorAtualizado = await _tutorService.UpdateTutorAsync(id_Tutor, Tutor);
-
-            _context.Entry(tutorAtualizado).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Tutor atualizado com sucesso");
             return Ok(tutorAtualizado);
@@ -173,10 +175,6 @@ public class TutorController : ControllerBase
             {
                 var tutorCriado = await _tutorService.CreateTutorAsync(Tutor);
 
-                _context.Tutor.Add(tutorCriado);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Tutor criado com sucesso.");
                 return Ok(tutorCriado);
             }
@@ -204,17 +202,14 @@ public class TutorController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>Deletado: </returns>
     [HttpDelete]
-    [Route("deleta/Tutor/{id_Tutor:int}")]
+    [Route("deleta/Tutor/{id_Tutor:int}", Name = "DeletaTutor")]
     public async Task<IActionResult> DeleteTutor(int id_Tutor)
     {
         _logger.LogInformation("Iniciando a exclusão do tutor");
 
         try
         {
-            var Tutor = await _tutorService.DeleteTutorAsync(id_Tutor);
-
-            _context.Tutor.Remove(Tutor);
-            await _context.SaveChangesAsync();
+            await _tutorService.DeleteTutorAsync(id_Tutor);
 
             _logger.LogInformation("Tutor foi excluído com sucesso");
             return NoContent();
@@ -224,5 +219,33 @@ public class TutorController : ControllerBase
             _logger.LogError(ex, "Erro ao deletar ID tutor");
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
+    }
+
+    private TutorDTO CreateTutorDto(Tutor tutor)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetTutoresById", new { id_Tutor = tutor.Id_tutor })!,
+                "self",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("GetAllTutores", null)!,
+                "collection",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("UpdateTutor", new { id_Tutor = tutor.Id_tutor })!,
+                "update",
+                "PUT"),
+            
+            new LinkDTO(
+                Url.Link("DeletaTutor", new { id_Tutor = tutor.Id_tutor })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new TutorDTO(tutor, links);
     }
 }

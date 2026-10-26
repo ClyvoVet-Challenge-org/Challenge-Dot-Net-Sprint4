@@ -1,5 +1,6 @@
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
 {
-    public class ClinicaOracleRepository : IClinicaRepository
+    public class ClinicaOracleRepository : IClinicaOracleRepository
     {
         private readonly AppDbContext _context;
 
@@ -18,9 +19,18 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
 
         public async Task<Clinica> CreateadAsync(Clinica clinica)
         {
-            await _context.Clinicas.AddAsync(clinica);
-            await _context.SaveChangesAsync();
-            return clinica;
+            try
+            {
+                await _context.Clinicas.AddAsync(clinica);
+                await _context.SaveChangesAsync();
+                return clinica;
+            } 
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Erro ao salvar clínica no Oracle: {ex}");
+                throw;
+            }
+            
         }
 
         public async Task<Clinica> DeleteClinicaAsync(int id_Clinica)

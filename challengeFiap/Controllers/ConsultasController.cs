@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,12 +13,12 @@ public class ConsultasController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ConsultasController> _logger;
-    private readonly IConsultaRepository _consultaService;
+    private readonly IConsultaService _consultaService;
 
     public ConsultasController(
         AppDbContext context,
         ILogger<ConsultasController> logger,
-        IConsultaRepository consultaService)
+        IConsultaService consultaService)
     {
         _context = context;
         _logger = logger;
@@ -30,18 +33,21 @@ public class ConsultasController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Buscar</returns>
     [HttpGet]
-    [Route("relatorio/consulta")]
-    public async Task<ActionResult<IEnumerable<Consulta>>> GetAllConsulta()
+    [Route("relatorio/consulta", Name = "GetAllConsultas")]
+    public async Task<ActionResult<IEnumerable<ConsultaDTO>>> GetAllConsulta()
     {
         _logger.LogInformation("Iniciando a busca de consultas");
 
         try
         {
             var relatorioConsulta = await _consultaService.GetAllConsultaAsync();
+            var consultaDtos = relatorioConsulta
+                .Select(consulta => CreateConsultaDto(consulta))
+                .ToList();
 
             _logger.LogInformation("Busca de consultas concluída com sucesso");
 
-            return Ok(relatorioConsulta);
+            return Ok(consultaDtos);
         }
         catch (Exception ex)
         {
@@ -61,8 +67,8 @@ public class ConsultasController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio</returns>
     [HttpGet]
-    [Route("relatorio/consulta/{id_consulta:int}")]
-    public async Task<ActionResult<Consulta>> GetConsulta(int id_consulta)
+    [Route("relatorio/consulta/{id_consulta:int}", Name = "GetConsultasById")]
+    public async Task<ActionResult<ConsultaDTO>> GetConsulta(int id_consulta)
     {
         _logger.LogInformation("Iniciando a busca de consulta com ID: {IdConsulta}",id_consulta);
 
@@ -72,7 +78,8 @@ public class ConsultasController : ControllerBase
             {
                 var consulta = await _consultaService.GetConsultaIdAsync(id_consulta);
                 _logger.LogInformation("Consulta foi encontrada com sucesso");
-                return Ok(consulta);
+                var consultadto = CreateConsultaDto(consulta);
+                return Ok(consultadto);
             }
             catch (Exception ex)
             {
@@ -100,7 +107,7 @@ public class ConsultasController : ControllerBase
     /// <response code="404">Consulta não encontrado</response>
     /// <returns>Atualização consulta</returns>
     [HttpPut]
-    [Route("atualizar/consulta/{id_consulta:int}")]
+    [Route("atualizar/consulta/{id_consulta:int}", Name = "UpdateConsulta")]
     public async Task<IActionResult> PutConsulta(int id_consulta, Consulta consulta)
     {
         _logger.LogInformation("Iniciando atualização de consulta");
@@ -115,10 +122,6 @@ public class ConsultasController : ControllerBase
         try
         {
             var consultaAtualizada =await _consultaService.UpdateConsultaAsync(id_consulta,consulta);
-
-            _context.Entry(consultaAtualizada).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Consulta atualizada com sucesso");
 
@@ -170,10 +173,6 @@ public class ConsultasController : ControllerBase
             {
                 var consultaCriada = await _consultaService.CreateConsultaAsync(consulta);
 
-                _context.Consultas.Add(consultaCriada);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Consulta criada com sucesso");
 
                 return Ok(consultaCriada);
@@ -203,18 +202,14 @@ public class ConsultasController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>deletar consulta</returns>
     [HttpDelete]
-    [Route("deleta/consulta/{id_consulta:int}")]
+    [Route("deleta/consulta/{id_consulta:int}", Name = "DeletaConsulta")]
     public async Task<IActionResult> DeleteConsulta(int id_consulta)
     {
         _logger.LogInformation("Iniciando remoção de consulta.");
 
         try
         {
-            var consulta = await _consultaService.DeleteConsultaAsync(id_consulta);
-
-            _context.Consultas.Remove(consulta);
-
-            await _context.SaveChangesAsync();
+            await _consultaService.DeleteConsultaAsync(id_consulta);
 
             _logger.LogInformation("Consulta foi excluída com sucesso");
 
@@ -225,5 +220,38 @@ public class ConsultasController : ControllerBase
 
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
+    }
+
+    private ConsultaDTO CreateConsultaDto(Consulta consulta)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link(
+                "GetConsultasById", new { id_consulta = consulta.Id_consulta })!,
+                "self",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link(
+                "GetAllConsultas", null)!,
+                "collection",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link(
+                "UpdateConsulta", new { id_consulta = consulta.Id_consulta })!,
+                "update",
+                "PUT"),
+            
+            new LinkDTO(
+                Url.Link(
+                "DeletaConsulta", new { id_consulta = consulta.Id_consulta })!,
+                "delete",
+                "DELETE"
+                )
+        };
+
+        return new ConsultaDTO(consulta, links);
     }
 }

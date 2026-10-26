@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class CarteiraVacinalsControllerTests
     {
 
-        private readonly Mock<ICarteiraVacinalRepository> _CarteiraVacinalServiceMock;
+        private readonly Mock<ICarteiraVacinalService> _CarteiraVacinalServiceMock;
 
         private readonly CarteiraVacinalsController _controller;
         private readonly ILogger<CarteiraVacinalsController> _logger;
@@ -23,7 +24,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public CarteiraVacinalsControllerTests()
         {
-            _CarteiraVacinalServiceMock = new Mock<ICarteiraVacinalRepository>();
+            _CarteiraVacinalServiceMock = new Mock<ICarteiraVacinalService>();
             var loggMock = new Mock<ILogger<CarteiraVacinalsController>>();
             _logger = loggMock.Object;
 
@@ -33,6 +34,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new CarteiraVacinalsController(_context, _logger, _CarteiraVacinalServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -137,7 +142,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<CarteiraVacinal>>(okResult.Value);
+            var returnedList = Assert.IsType<List<CarteiraVacinalDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -166,10 +171,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedCarteira = Assert.IsType<CarteiraVacinal>(okResult.Value);
+            var returnedCarteira = Assert.IsType<CarteiraVacinalDTO>(okResult.Value);
 
             Assert.NotNull(returnedCarteira);
-            Assert.Equal(id_carteira, returnedCarteira.Id_carteiraVacinal);
+            Assert.Equal(id_carteira, returnedCarteira.CarteiraVacinal.Id_carteiraVacinal);
+            Assert.Equal(4, returnedCarteira.Dto.Count);
         }
 
         [Fact]

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,8 +13,8 @@ public class MedicamentoesController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<MedicamentoesController> _logger;
-    private readonly IMedicamentoRepository _medicamentoService;
-    public MedicamentoesController(AppDbContext context, ILogger<MedicamentoesController> logger, IMedicamentoRepository medicamentoService)
+    private readonly IMedicamentoService _medicamentoService;
+    public MedicamentoesController(AppDbContext context, ILogger<MedicamentoesController> logger, IMedicamentoService medicamentoService)
     {
         _context = context;
         _logger = logger;
@@ -26,18 +29,21 @@ public class MedicamentoesController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/medicamento")]
+    [Route("relatorio/medicamento", Name = "GetAllMedicamentos")]
 
-    public async Task<ActionResult<IEnumerable<Medicamento>>> GetAllMedicamento()
+    public async Task<ActionResult<IEnumerable<MedicamentoDTO>>> GetAllMedicamento()
     {
         _logger.LogInformation("Iniciando a busca de medicamentos");
 
         try
         {
             var relatorioMedicamento = await _medicamentoService.GetAllMedicamentoAsync();
+            var medicamentoDtos = relatorioMedicamento
+                .Select(medicamento => CreateMedicamentoDto(medicamento))
+                .ToList();
 
             _logger.LogInformation("Busca de medicamentos concluída com sucesso");
-            return Ok(relatorioMedicamento);
+            return Ok(medicamentoDtos);
         }
         catch (Exception ex)
         {
@@ -56,8 +62,8 @@ public class MedicamentoesController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio</returns>
     [HttpGet]
-    [Route("relatorio/medicamento/{id_medicamento:int}")]
-    public async Task<ActionResult<Medicamento>> GetMedicamento(int id_medicamento)
+    [Route("relatorio/medicamento/{id_medicamento:int}", Name = "GetMedicamentosById")]
+    public async Task<ActionResult<MedicamentoDTO>> GetMedicamento(int id_medicamento)
     {
         _logger.LogInformation("Iniciando a busca do medicamento");
 
@@ -67,7 +73,8 @@ public class MedicamentoesController : ControllerBase
             {
                 var medicamento = await _medicamentoService.GetMedicamentoIdAsync(id_medicamento);
                 _logger.LogInformation("Medicamento foi encontrado com sucesso");
-                return Ok(medicamento);
+                var medicamentoDTO = CreateMedicamentoDto(medicamento);
+                return Ok(medicamentoDTO);
             }
             catch (Exception ex)
             {
@@ -95,7 +102,7 @@ public class MedicamentoesController : ControllerBase
     /// <response code="404">Medicamento não encontrado</response>
     /// <returns>Atualizar: </returns>
     [HttpPut]
-    [Route("atualizar/medicamento/{id_medicamento:int}")]
+    [Route("atualizar/medicamento/{id_medicamento:int}", Name = "UpdateMedicamento")]
     public async Task<IActionResult> PutMedicamento(int id_medicamento, Medicamento medicamento)
     {
         _logger.LogInformation("Iniciando a atualização do medicamento");
@@ -109,10 +116,6 @@ public class MedicamentoesController : ControllerBase
         try
         {
             var medicamentoAtualizado = await _medicamentoService.UpdateMedicamentoAsync(id_medicamento, medicamento);
-
-            _context.Entry(medicamentoAtualizado).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Medicamento atualizado com sucesso");
             return Ok(medicamentoAtualizado);
@@ -161,10 +164,6 @@ public class MedicamentoesController : ControllerBase
             {
                 var medicamentoCriado = await _medicamentoService.CreateMedicamentoAsync(medicamento);
 
-                _context.Medicamentos.Add(medicamentoCriado);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Medicamento criado com sucesso");
                 return Ok(medicamentoCriado);
             }
@@ -193,17 +192,14 @@ public class MedicamentoesController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>Deletar: </returns>
     [HttpDelete]
-    [Route("deleta/medicamento/{id_medicamento:int}")]
+    [Route("deleta/medicamento/{id_medicamento:int}", Name = "DeletaMedicamento")]
     public async Task<IActionResult> DeleteMedicamento(int id_medicamento)
     {
         _logger.LogInformation("Iniciando a exclusão do medicamento");
 
         try
         {
-            var medicamento = await _medicamentoService.DeleteMedicamentoAsync(id_medicamento);
-
-            _context.Medicamentos.Remove(medicamento);
-            await _context.SaveChangesAsync();
+            await _medicamentoService.DeleteMedicamentoAsync(id_medicamento);
 
             _logger.LogInformation("Medicamento foi excluído com sucesso");
             return NoContent();
@@ -213,7 +209,33 @@ public class MedicamentoesController : ControllerBase
             _logger.LogError(ex, "Erro ao deletar medicamento");
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
-
     }
 
+    private MedicamentoDTO CreateMedicamentoDto(Medicamento medicamento)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetMedicamentosById", new { id_medicamento = medicamento.Id_medicamento })!,
+                "self",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("GetAllMedicamentos", null)!,
+                "collection",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("UpdateMedicamento", new { id_medicamento = medicamento.Id_medicamento })!,
+                "update",
+                "PUT"),
+            
+            new LinkDTO(
+                Url.Link("DeletaMedicamento", new { id_medicamento = medicamento.Id_medicamento })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new MedicamentoDTO(medicamento, links);
+    }
 }

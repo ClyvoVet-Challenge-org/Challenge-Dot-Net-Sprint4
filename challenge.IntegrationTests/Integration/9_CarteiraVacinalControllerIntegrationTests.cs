@@ -1,5 +1,6 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
 using challengeFiap.Domain.Entities;
+using challengeFiap.Domain.Dto;
 using challengeFiap.Domain.Enums;
 using System.Collections.Generic;
 using System;
@@ -106,10 +107,11 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var carteira = await response.Content.ReadFromJsonAsync<CarteiraVacinal>();
+            var carteira = await response.Content.ReadFromJsonAsync<CarteiraVacinalDTO>();
 
             Assert.NotNull(carteira);
-            Assert.Equal(id_carteiraVacinal, carteira.Id_carteiraVacinal);
+            Assert.Equal(id_carteiraVacinal, carteira.CarteiraVacinal.Id_carteiraVacinal);
+            Assert.Contains(carteira.Dto, link => link.Rel == "self" && link.Method == "GET");
         }
 
         [Fact]
@@ -123,9 +125,11 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var lista = await response.Content.ReadFromJsonAsync<List<CarteiraVacinal>>();
+            var lista = await response.Content.ReadFromJsonAsync<List<CarteiraVacinalDTO>>();
 
             Assert.NotNull(lista);
+            Assert.All(lista, item =>
+                Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
         [Fact]

@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class CateiraVacinalService : ICarteiraVacinalRepository
+    public class CateiraVacinalService : ICarteiraVacinalService
     {
-        private readonly CarteiraVacinalOracleRepository _oracle;
-        private readonly CarteiraVacinalRepository _mongo;
+        private readonly ICarteiraVacinalOracleRepository _oracle;
+        private readonly ICarteiraVacinalMongoRepository _mongo;
 
-        public CateiraVacinalService(CarteiraVacinalOracleRepository oracle, CarteiraVacinalRepository mongo)
+        public CateiraVacinalService(ICarteiraVacinalOracleRepository oracle, ICarteiraVacinalMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +28,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<CarteiraVacinal>> GetAllCarteiraVacinalAsync()
         {
-            var c_v = await _oracle.GetAllCarteiraVacinalAsync();
-            await _mongo.GetAllCarteiraVacinalAsync();
-            return c_v;
+            var oracleItems = await _oracle.GetAllCarteiraVacinalAsync();
+            var mongoItems = await _mongo.GetAllCarteiraVacinalAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_carteiraVacinal);
         }
 
-        public async Task<CarteiraVacinal> GetCarteiraVacinalIdAsync(int id_CarteiraVacinal)
+        public Task<CarteiraVacinal> GetCarteiraVacinalIdAsync(int id_CarteiraVacinal)
         {
-            var carteiraVacinal = await _oracle.GetCarteiraVacinalIdAsync(id_CarteiraVacinal);
-            await _mongo.GetCarteiraVacinalIdAsync(id_CarteiraVacinal);
-            return carteiraVacinal;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetCarteiraVacinalIdAsync(id_CarteiraVacinal),
+                () => _mongo.GetCarteiraVacinalIdAsync(id_CarteiraVacinal));
         }
 
         public async Task<CarteiraVacinal> UpdateCarteiraVacinalAsync(int id_carteira, CarteiraVacinal carteiraVacinal)
@@ -54,4 +56,3 @@ namespace challengeFiap.Application.Service
         }
     }
 }
-

@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
 {
     public class VeterinariosControllerTests
     {
-        private readonly Mock<IVeterinarioRepository> _veterinarioServiceMock;
+        private readonly Mock<IVeterinarioService> _veterinarioServiceMock;
 
         private readonly VeterinariosController _controller;
         private readonly ILogger<VeterinariosController> _logger;
@@ -25,7 +26,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public VeterinariosControllerTests()
         {
-            _veterinarioServiceMock = new Mock<IVeterinarioRepository>();
+            _veterinarioServiceMock = new Mock<IVeterinarioService>();
             var loggMock = new Mock<ILogger<VeterinariosController>>();
             _logger = loggMock.Object;
 
@@ -35,6 +36,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new VeterinariosController(_context, _logger, _veterinarioServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -125,7 +130,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<Veterinario>>(okResult.Value);
+            var returnedList = Assert.IsType<List<VeterinarioDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -154,10 +159,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedVeterinario = Assert.IsType<Veterinario>(okResult.Value);
+            var returnedVeterinario = Assert.IsType<VeterinarioDTO>(okResult.Value);
 
             Assert.NotNull(returnedVeterinario);
-            Assert.Equal(id_vet, returnedVeterinario.Id_vet);
+            Assert.Equal(id_vet, returnedVeterinario.Veterinario.Id_vet);
+            Assert.Equal(4, returnedVeterinario.Dto.Count);
         }
 
         [Fact]

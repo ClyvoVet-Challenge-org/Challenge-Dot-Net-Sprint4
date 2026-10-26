@@ -1,19 +1,20 @@
 ﻿
 using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class EnderecoTutorService : IenderecoTutorRepository
+    public class EnderecoTutorService : IEnderecoTutorService
     {
-        private readonly EnderecoTutorOracleRepository _oracle;
-        private readonly EnderecoTutorRepository _mongo;
+        private readonly IEnderecoTutorOracleRepository _oracle;
+        private readonly IEnderecoTutorMongoRepository _mongo;
 
-        public EnderecoTutorService(EnderecoTutorOracleRepository oracle, EnderecoTutorRepository mongo)
+        public EnderecoTutorService(IEnderecoTutorOracleRepository oracle, IEnderecoTutorMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -28,16 +29,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<EnderecoTutor>> GetAllEnderecoTutorAsync()
         {
-            var list = await _oracle.GetAllEnderecoTutorAsync();
-            await _mongo.GetAllEnderecoTutorAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllEnderecoTutorAsync();
+            var mongoItems = await _mongo.GetAllEnderecoTutorAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_endereco_tutor);
         }
 
-        public async Task<EnderecoTutor> GetEnderecoTutorIdAsync(int id_endereco)
+        public Task<EnderecoTutor> GetEnderecoTutorIdAsync(int id_endereco)
         {
-            var item = await _oracle.GetEnderecoTutorIdAsync(id_endereco);
-            await _mongo.GetEnderecoTutorIdAsync(id_endereco);
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetEnderecoTutorIdAsync(id_endereco),
+                () => _mongo.GetEnderecoTutorIdAsync(id_endereco));
         }
 
         public async Task<EnderecoTutor> UpdateEnderecoTutorAsync(int id_endereco, EnderecoTutor enderecoTutor)
@@ -55,4 +57,3 @@ namespace challengeFiap.Application.Service
         }
     }
 }
-

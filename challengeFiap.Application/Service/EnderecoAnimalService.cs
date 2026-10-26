@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class EnderecoAnimalService : IenderecoAnimalRepository
+    public class EnderecoAnimalService : IEnderecoAnimalService
     {
-        private readonly EnderecoAnimalOracleRepository _oracle;
-        private readonly EnderecoAnimalRepository _mongo;
+        private readonly IEnderecoAnimalOracleRepository _oracle;
+        private readonly IEnderecoAnimalMongoRepository _mongo;
 
-        public EnderecoAnimalService(EnderecoAnimalOracleRepository oracle, EnderecoAnimalRepository mongo)
+        public EnderecoAnimalService(IEnderecoAnimalOracleRepository oracle, IEnderecoAnimalMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +28,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<EnderecoAnimal>> GetAllEnderecoAnimalAsync()
         {
-            var list = await _oracle.GetAllEnderecoAnimalAsync();
-            await _mongo.GetAllEnderecoAnimalAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllEnderecoAnimalAsync();
+            var mongoItems = await _mongo.GetAllEnderecoAnimalAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_endereco_animal);
         }
 
-        public async Task<EnderecoAnimal> GetEnderecoAnimalIdAsync(int id_endereco)
+        public Task<EnderecoAnimal> GetEnderecoAnimalIdAsync(int id_endereco)
         {
-            var item = await _oracle.GetEnderecoAnimalIdAsync(id_endereco);
-            await _mongo.GetEnderecoAnimalIdAsync(id_endereco);
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetEnderecoAnimalIdAsync(id_endereco),
+                () => _mongo.GetEnderecoAnimalIdAsync(id_endereco));
         }
 
         public async Task<EnderecoAnimal> UpdateEnderecoAnimalAsync(int id_endereco, EnderecoAnimal enderecoAnimal)

@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class TutorService : ItutorRepository
+    public class TutorService : ITutorService
     {
-        private readonly TutorOracleRepository _oracle;
-        private readonly TutorRepository _mongo;
+        private readonly ITutorOracleRepository _oracle;
+        private readonly ITutorMongoRepository _mongo;
 
-        public TutorService(TutorOracleRepository oracle, TutorRepository mongo)
+        public TutorService(ITutorOracleRepository oracle, ITutorMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +28,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<Tutor>> GetAllTutorAsync()
         {
-            var list = await _oracle.GetAllTutorAsync();
-            await _mongo.GetAllTutorAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllTutorAsync();
+            var mongoItems = await _mongo.GetAllTutorAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_tutor);
         }
 
-        public async Task<Tutor> GetTutorIdAsync(int id_tutor)
+        public Task<Tutor> GetTutorIdAsync(int id_tutor)
         {
-            var item = await _oracle.GetTutorIdAsync(id_tutor);
-            await _mongo.GetTutorIdAsync(id_tutor);
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetTutorIdAsync(id_tutor),
+                () => _mongo.GetTutorIdAsync(id_tutor));
         }
 
         public async Task<Tutor> UpdateTutorAsync(int id_tutor, Tutor tutor)

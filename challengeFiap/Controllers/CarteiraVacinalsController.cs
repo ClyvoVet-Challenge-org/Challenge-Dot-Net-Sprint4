@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Application.Service;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -11,13 +14,13 @@ public class CarteiraVacinalsController : ControllerBase
 {
     private readonly AppDbContext _context;
 
-    private readonly ICarteiraVacinalRepository _carteiraVacinalService;
+    private readonly ICarteiraVacinalService _carteiraVacinalService;
     private readonly ILogger<CarteiraVacinalsController> _logger;
 
     public CarteiraVacinalsController(
         AppDbContext context,
         ILogger<CarteiraVacinalsController> logger,
-        ICarteiraVacinalRepository carteiraVacinalService)
+        ICarteiraVacinalService carteiraVacinalService)
     {
         _context = context;
         _logger = logger;
@@ -32,17 +35,19 @@ public class CarteiraVacinalsController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Lista de carteira vacinal</returns>
     [HttpGet]
-    [Route("relatorio/carteiravacinal")]
-    public async Task<ActionResult<IEnumerable<CarteiraVacinal>>> GetAllCarteiraVacinal()
+    [Route("relatorio/carteiravacinal", Name = "GetAllCarteirasVacinais")]
+    public async Task<ActionResult<IEnumerable<CarteiraVacinalDTO>>> GetAllCarteiraVacinal()
     {
         _logger.LogInformation("Começado a busca de carteira vacinal do pet.");
 
         try
         {
             var relatorioCarteiraVacinal = await _carteiraVacinalService.GetAllCarteiraVacinalAsync();
-
+            var carteiraVacinalDtos = relatorioCarteiraVacinal
+                .Select(carteira => CreateCarteiraVacinalDto(carteira))
+                .ToList();
             _logger.LogInformation("Busca realizada com sucesso.");
-            return Ok(relatorioCarteiraVacinal);
+            return Ok(carteiraVacinalDtos);
         }
         catch (Exception ex)
         {
@@ -61,8 +66,8 @@ public class CarteiraVacinalsController : ControllerBase
     /// <param name="id_carteiravacinal">Id de carteira de vacinação</param>
     /// <returns>Lista com id vacinação</returns>
     [HttpGet]
-    [Route("relatorio/carteiravacinal/{id_carteiravacinal:int}")]
-    public async Task<ActionResult<CarteiraVacinal>> GetCarteiraVacinal(int id_carteiravacinal)
+    [Route("relatorio/carteiravacinal/{id_carteiravacinal:int}", Name = "GetCarteirasVacinaisById")]
+    public async Task<ActionResult<CarteiraVacinalDTO>> GetCarteiraVacinal(int id_carteiravacinal)
     {
         _logger.LogInformation("Busca de carteira vacinal com ID: {IdCarteiraVacinal}", id_carteiravacinal);
         try
@@ -71,6 +76,8 @@ public class CarteiraVacinalsController : ControllerBase
             {
                 var carteiravacinal = await _carteiraVacinalService.GetCarteiraVacinalIdAsync(id_carteiravacinal);
                 _logger.LogInformation("Carteira Vacinal foi encontrada com sucesso");
+                var carteiraVacinal = CreateCarteiraVacinalDto(carteiravacinal);
+
                 return Ok(carteiravacinal);
             }
             catch (Exception ex)
@@ -99,7 +106,7 @@ public class CarteiraVacinalsController : ControllerBase
     /// <response code="404">Id carteira vacinação não encontrado</response>
     /// <returns>Dados atualizados</returns>
     [HttpPut]
-    [Route("atualizar/carteiravacinal/{id_carteiravacinal:int}")]
+    [Route("atualizar/carteiravacinal/{id_carteiravacinal:int}", Name = "UpdateCarteiraVacinal")]
     public async Task<IActionResult> PutCarteiraVacinal(int id_carteiravacinal, CarteiraVacinal carteiravacinal)
     {
         _logger.LogInformation("Iniciando atualizacao de carteira vacinal.");
@@ -114,9 +121,6 @@ public class CarteiraVacinalsController : ControllerBase
         try
         {
             var carteiraVacinalAtualizar= await _carteiraVacinalService.UpdateCarteiraVacinalAsync(id_carteiravacinal, carteiravacinal);
-            _context.Entry(carteiraVacinalAtualizar).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Atualizacao de carteira vacinal concluída com sucesso. ID: {IdCarteiraVacinal}",id_carteiravacinal);
 
@@ -170,9 +174,6 @@ public class CarteiraVacinalsController : ControllerBase
             {
                 var carteiraVacinal = await _carteiraVacinalService.CreateCarteiraVacinalAsync(carteiravacinal);
 
-                _context.CarteiraVacinals.Add(carteiraVacinal);
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Carteira vacinal criada com sucesso. ID: {IdCarteiraVacinal}",carteiravacinal.Id_carteiraVacinal);
 
                 return CreatedAtAction("GetCarteiraVacinal", new { id_carteiraVacinal = carteiravacinal.Id_carteiraVacinal }, carteiravacinal);
@@ -206,17 +207,14 @@ public class CarteiraVacinalsController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>sucesso deletado</returns>
     [HttpDelete]
-    [Route("deleta/carteiravacinal/{id_carteiravacinal:int}")]
+    [Route("deleta/carteiravacinal/{id_carteiravacinal:int}", Name = "DeletaCarteiraVacinal")]
     public async Task<IActionResult> DeleteCarteiraVacinal(int id_carteiravacinal)
     {
         _logger.LogInformation("Começando processo de deletar da carteira vacinal. ID: {IdCarteiraVacinal}", id_carteiravacinal);
 
         try
         {
-            var carteiraVacinal = await _carteiraVacinalService.DeleteCarteiraVacinalAsync(id_carteiravacinal);
-
-            _context.CarteiraVacinals.Remove(carteiraVacinal);
-            await _context.SaveChangesAsync();
+            await _carteiraVacinalService.DeleteCarteiraVacinalAsync(id_carteiravacinal);
 
             _logger.LogInformation("CarteiraVacinal foi excluída com sucesso");
 
@@ -227,5 +225,37 @@ public class CarteiraVacinalsController : ControllerBase
 
             return BadRequest($"Erro ao deletar : {ex.Message}");
         }
+    }
+
+    private CarteiraVacinalDTO CreateCarteiraVacinalDto(CarteiraVacinal carteiraVacinal)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetCarteirasVacinaisById", new { id_carteiravacinal = carteiraVacinal.Id_carteiraVacinal })!,
+                "self",
+                "GET"
+                ),
+
+            new LinkDTO(
+                Url.Link("GetAllCarteirasVacinais", null)!,
+                "collection",
+                "GET"
+                ),
+
+            new LinkDTO(
+                Url.Link("UpdateCarteiraVacinal", new { id_carteiravacinal = carteiraVacinal.Id_carteiraVacinal })!,
+                "update",
+                "PUT"
+                ),
+
+            new LinkDTO(
+                Url.Link("DeletaCarteiraVacinal", new { id_carteiravacinal = carteiraVacinal.Id_carteiraVacinal })!,
+                "delete",
+                "DELETE"
+                )
+        };
+
+        return new CarteiraVacinalDTO(carteiraVacinal, links);
     }
 }

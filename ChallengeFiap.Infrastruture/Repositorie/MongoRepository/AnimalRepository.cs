@@ -1,5 +1,6 @@
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
 using ChallengeFiap.Infrastruture.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChallengeFiap.Infrastruture.Repositorie.MongoRepository
 {
-    public class AnimalRepository : IAnimalRepository
+    public class AnimalRepository : IAnimalMongoRepository
     {
         private readonly IMongoCollection<Animal> _animalCollection;
 

@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class PrescricaoService : IprescricaoRepository
+    public class PrescricaoService : IPrescricaoService
     {
-        private readonly PrescricaoOracleRepository _oracle;
-        private readonly PrescricaoRepository _mongo;
+        private readonly IPrescricaoOracleRepository _oracle;
+        private readonly IPrescricaoMongoRepository _mongo;
 
-        public PrescricaoService(PrescricaoOracleRepository oracle, PrescricaoRepository mongo)
+        public PrescricaoService(IPrescricaoOracleRepository oracle, IPrescricaoMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +28,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<Prescricao>> GetAllPrescricaoAsync()
         {
-            var list = await _oracle.GetAllPrescricaoAsync();
-            await _mongo.GetAllPrescricaoAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllPrescricaoAsync();
+            var mongoItems = await _mongo.GetAllPrescricaoAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_prescricao);
         }
 
-        public async Task<Prescricao> GetPrescricaoIdAsync(int id_prescricao)
+        public Task<Prescricao> GetPrescricaoIdAsync(int id_prescricao)
         {
-            var item = await _oracle.GetPrescricaoIdAsync(id_prescricao);
-            await _mongo.GetPrescricaoIdAsync(id_prescricao);
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetPrescricaoIdAsync(id_prescricao),
+                () => _mongo.GetPrescricaoIdAsync(id_prescricao));
         }
 
         public async Task<Prescricao> UpdatePrescricaoAsync(int id_prescricao, Prescricao prescricao)

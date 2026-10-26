@@ -2,7 +2,10 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,12 +13,12 @@ public class EnderecoAnimalsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<EnderecoAnimalsController> _logger;
-    private readonly IenderecoAnimalRepository _enderecoAnimalService;
+    private readonly IEnderecoAnimalService _enderecoAnimalService;
 
     public EnderecoAnimalsController(
         AppDbContext context,
         ILogger<EnderecoAnimalsController> logger,
-        IenderecoAnimalRepository enderecoAnimalService)
+        IEnderecoAnimalService enderecoAnimalService)
     {
         _context = context;
         _logger = logger;
@@ -30,18 +33,21 @@ public class EnderecoAnimalsController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio endereço animal</returns>
     [HttpGet]
-    [Route("relatorio/enderecoanimal")]
-    public async Task<ActionResult<IEnumerable<EnderecoAnimal>>> GetAllEnderecoAnimal()
+    [Route("relatorio/enderecoanimal", Name = "GetAllEnderecosAnimals")]
+    public async Task<ActionResult<IEnumerable<EnderecoAnimalDTO>>> GetAllEnderecoAnimal()
     {
         _logger.LogInformation("Iniciando a busca de endereço animal");
 
         try
         {
             var relatorioEnAnimal = await _enderecoAnimalService.GetAllEnderecoAnimalAsync();
+            var enderecoAnimalDtos = relatorioEnAnimal
+                .Select(endereco => CreateEnderecoAnimalDto(endereco))
+                .ToList();
 
             _logger.LogInformation("Busca de endereço animal concluída com sucesso");
 
-            return Ok(relatorioEnAnimal);
+            return Ok(enderecoAnimalDtos);
         }
         catch (Exception ex)
         {
@@ -61,8 +67,8 @@ public class EnderecoAnimalsController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/enderecoanimal/{id_endereco_animal:int}")]
-    public async Task<ActionResult<EnderecoAnimal>> GetEnderecoAnimal(int id_endereco_animal)
+    [Route("relatorio/enderecoanimal/{id_endereco_animal:int}", Name = "GetEnderecosAnimalsById")]
+    public async Task<ActionResult<EnderecoAnimalDTO>> GetEnderecoAnimal(int id_endereco_animal)
     {
         _logger.LogInformation("Iniciando a busca de endereço animal");
 
@@ -72,7 +78,8 @@ public class EnderecoAnimalsController : ControllerBase
             {
                 var enderecoanimal = await _enderecoAnimalService.GetEnderecoAnimalIdAsync(id_endereco_animal);
                 _logger.LogInformation("Endereço animal foi encontrado com sucesso");
-                return Ok(enderecoanimal);
+                var enderecoAnimalDto = CreateEnderecoAnimalDto(enderecoanimal);
+                return Ok(enderecoAnimalDto);
             }
             catch (Exception ex)
             {
@@ -100,7 +107,7 @@ public class EnderecoAnimalsController : ControllerBase
     /// <response code="404">Endereço animal não encontrado</response>
     /// <returns>Atualizar: </returns>
     [HttpPut]
-    [Route("atualizar/enderecoanimal/{id_endereco_animal:int}")]
+    [Route("atualizar/enderecoanimal/{id_endereco_animal:int}", Name = "UpdateEnderecoAnimal")]
     public async Task<IActionResult> PutEnderecoAnimal(int id_endereco_animal,EnderecoAnimal enderecoanimal)
     {
         _logger.LogInformation("Iniciando atualização de endereço animal");
@@ -114,10 +121,6 @@ public class EnderecoAnimalsController : ControllerBase
         try
         {
             var enderecoAnimalAtualizado =await _enderecoAnimalService.UpdateEnderecoAnimalAsync(id_endereco_animal,enderecoanimal);
-
-            _context.Entry(enderecoAnimalAtualizado).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Atualização de endereço animal  foi concluída com sucesso.");
 
@@ -171,10 +174,6 @@ public class EnderecoAnimalsController : ControllerBase
             {
                 var enderecoAnimalCriado = await _enderecoAnimalService.CreateEnderecoAnimalAsync(enderecoanimal);
 
-                _context.EnderecoAnimals.Add(enderecoAnimalCriado);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Endereço animal criado com sucesso.");
 
                 return Ok(enderecoAnimalCriado);
@@ -205,17 +204,14 @@ public class EnderecoAnimalsController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>deletado: </returns>
     [HttpDelete]
-    [Route("deleta/enderecoanimal/{id_endereco_animal:int}")]
+    [Route("deleta/enderecoanimal/{id_endereco_animal:int}", Name = "DeletaEnderecoAnimal")]
     public async Task<IActionResult> DeleteEnderecoAnimal(int id_endereco_animal)
     {
         _logger.LogInformation("Iniciando remoção de endereço animal");
 
         try
         {
-            var enderecoanimal = await _enderecoAnimalService.DeleteEnderecoAnimalAsync(id_endereco_animal);
-
-            _context.EnderecoAnimals.Remove(enderecoanimal);
-            await _context.SaveChangesAsync();
+            await _enderecoAnimalService.DeleteEnderecoAnimalAsync(id_endereco_animal);
 
             _logger.LogInformation("EnderecoAnimal foi excluído com sucesso");
 
@@ -229,4 +225,35 @@ public class EnderecoAnimalsController : ControllerBase
 
     }
 
+    private EnderecoAnimalDTO CreateEnderecoAnimalDto(EnderecoAnimal enderecoAnimal)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetEnderecosAnimalsById", new { id_endereco_animal = enderecoAnimal.Id_endereco_animal })!,
+                "self",
+                "GET"
+                ),
+            
+            new LinkDTO(
+                Url.Link("GetAllEnderecosAnimals", null)!,
+                "collection",
+                "GET"
+                ),
+            
+            new LinkDTO(
+                Url.Link("UpdateEnderecoAnimal", new { id_endereco_animal = enderecoAnimal.Id_endereco_animal })!,
+                "update",
+                "PUT"
+                ),
+            
+            new LinkDTO(
+                Url.Link("DeletaEnderecoAnimal", new { id_endereco_animal = enderecoAnimal.Id_endereco_animal })!,
+                "delete",
+                "DELETE"
+                )
+        };
+
+        return new EnderecoAnimalDTO(enderecoAnimal, links);
+    }
 }

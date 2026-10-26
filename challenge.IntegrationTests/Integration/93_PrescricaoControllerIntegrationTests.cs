@@ -1,5 +1,6 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
 using challengeFiap.Domain.Entities;
+using challengeFiap.Domain.Dto;
 using System;
 using System.Net;
 using System.Net.Http.Json;
@@ -97,10 +98,11 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK,response.StatusCode);
 
-            var prescricao = await response.Content.ReadFromJsonAsync<Prescricao>();
+            var prescricao = await response.Content.ReadFromJsonAsync<PrescricaoDTO>();
 
             Assert.NotNull(prescricao);
-            Assert.Equal(id_prescricao,prescricao.Id_prescricao);
+            Assert.Equal(id_prescricao,prescricao.Prescricao.Id_prescricao);
+            Assert.Contains(prescricao.Dto, link => link.Rel == "self" && link.Method == "GET");
         }
 
         [Fact]
@@ -114,9 +116,11 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK,response.StatusCode);
 
-            var prescricoes = await response.Content.ReadFromJsonAsync<List<Prescricao>>();
+            var prescricoes = await response.Content.ReadFromJsonAsync<List<PrescricaoDTO>>();
 
             Assert.NotNull(prescricoes);
+            Assert.All(prescricoes, item =>
+                Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
         [Fact]
@@ -140,4 +144,3 @@ namespace challenge.IntegrationTests.Integration
         }
     }
 }
-

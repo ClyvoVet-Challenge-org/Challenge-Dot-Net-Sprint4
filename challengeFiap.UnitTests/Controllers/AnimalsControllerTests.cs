@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +15,14 @@ namespace challengeFiap.UnitTests.Controllers
 {
     public class AnimalsControllerTests
     {
-        private readonly Mock<IAnimalRepository> _animalServiceMock;
+        private readonly Mock<IAnimalService> _animalServiceMock;
         private readonly AnimalsController _controller;
         private readonly ILogger<AnimalsController> _logger;
         private readonly AppDbContext _context;
 
         public AnimalsControllerTests()
         {
-            _animalServiceMock = new Mock<IAnimalRepository>();
+            _animalServiceMock = new Mock<IAnimalService>();
             var loggMock = new Mock<ILogger<AnimalsController>>();
             _logger = loggMock.Object;
 
@@ -31,6 +32,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new AnimalsController(_context, _logger, _animalServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -140,9 +145,10 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<Animal>>(okResult.Value);
+            var returnedList = Assert.IsType<List<AnimalDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
+            Assert.All(returnedList, item => Assert.Equal(4, item.Dto.Count));
         }
 
         [Fact]
@@ -172,10 +178,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedAnimal = Assert.IsType<Animal>(okResult.Value);
+            var returnedAnimal = Assert.IsType<AnimalDTO>(okResult.Value);
 
             Assert.NotNull(returnedAnimal);
-            Assert.Equal(id_animal, returnedAnimal.Id_animal);
+            Assert.Equal(id_animal, returnedAnimal.Animal.Id_animal);
+            Assert.Equal(4, returnedAnimal.Dto.Count);
         }
 
         [Fact]

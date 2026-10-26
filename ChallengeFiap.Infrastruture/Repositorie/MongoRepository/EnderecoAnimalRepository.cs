@@ -1,5 +1,6 @@
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
 using ChallengeFiap.Infrastruture.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChallengeFiap.Infrastruture.Repositorie.MongoRepository
 {
-    public class EnderecoAnimalRepository : IenderecoAnimalRepository
+    public class EnderecoAnimalRepository : IEnderecoAnimalMongoRepository
     {
         private readonly IMongoCollection<EnderecoAnimal> _collection;
         public EnderecoAnimalRepository(MongoDbContext context, IOptions<MongoStoreDataBaseSettings> settings)

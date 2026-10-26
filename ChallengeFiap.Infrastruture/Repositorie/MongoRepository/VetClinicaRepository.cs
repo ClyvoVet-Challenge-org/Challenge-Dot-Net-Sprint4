@@ -1,5 +1,6 @@
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
 using ChallengeFiap.Infrastruture.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -9,7 +10,7 @@ using System;
 
 namespace ChallengeFiap.Infrastruture.Repositorie.MongoRepository
 {
-    public class VetClinicaRepository : IVetClinica
+    public class VetClinicaRepository : IVetClinicaMongoRepository
     {
         private readonly IMongoCollection<VetClinica> _collection;
 

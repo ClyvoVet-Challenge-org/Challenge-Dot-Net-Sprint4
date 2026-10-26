@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class EnderecoenderecoAnimalsControllerTests
     {
 
-        private readonly Mock<IenderecoAnimalRepository> _enderecoAnimalServiceMock;
+        private readonly Mock<IEnderecoAnimalService> _enderecoAnimalServiceMock;
 
         private readonly EnderecoAnimalsController _controller;
         private readonly ILogger<EnderecoAnimalsController> _logger;
@@ -23,7 +24,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public EnderecoenderecoAnimalsControllerTests()
         {
-            _enderecoAnimalServiceMock = new Mock<IenderecoAnimalRepository>();
+            _enderecoAnimalServiceMock = new Mock<IEnderecoAnimalService>();
             var loggMock = new Mock<ILogger<EnderecoAnimalsController>>();
             _logger = loggMock.Object;
 
@@ -33,6 +34,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new EnderecoAnimalsController(_context, _logger, _enderecoAnimalServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -151,7 +156,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<EnderecoAnimal>>(okResult.Value);
+            var returnedList = Assert.IsType<List<EnderecoAnimalDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -184,10 +189,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedEndereco = Assert.IsType<EnderecoAnimal>(okResult.Value);
+            var returnedEndereco = Assert.IsType<EnderecoAnimalDTO>(okResult.Value);
 
             Assert.NotNull(returnedEndereco);
-            Assert.Equal(id_endereco_animal, returnedEndereco.Id_endereco_animal);
+            Assert.Equal(id_endereco_animal, returnedEndereco.EnderecoAnimal.Id_endereco_animal);
+            Assert.Equal(4, returnedEndereco.Dto.Count);
         }
 
         [Fact]

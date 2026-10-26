@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,9 +13,9 @@ public class VeterinariosController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<VeterinariosController> _logger;
-    private readonly IVeterinarioRepository _veterinarioService;
+    private readonly IVeterinarioService _veterinarioService;
 
-    public VeterinariosController(AppDbContext context, ILogger<VeterinariosController> logger, IVeterinarioRepository veterinarioService)
+    public VeterinariosController(AppDbContext context, ILogger<VeterinariosController> logger, IVeterinarioService veterinarioService)
     {
         _context = context;
         _logger = logger;
@@ -27,17 +30,20 @@ public class VeterinariosController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/veterinario")]
-    public async Task<ActionResult<IEnumerable<Veterinario>>> GetAllVeterinario()
+    [Route("relatorio/veterinario", Name = "GetAllVeterinarios")]
+    public async Task<ActionResult<IEnumerable<VeterinarioDTO>>> GetAllVeterinario()
     {
         _logger.LogInformation("Iniciando a busca de veterinarios");
 
         try
         {
             var relatorioVeterinario = await _veterinarioService.GetAllVeterinarioAsync();
+            var veterinarioDtos = relatorioVeterinario
+                .Select(veterinario => CreateVeterinarioDto(veterinario))
+                .ToList();
 
             _logger.LogInformation("Busca de veterinarios concluída com sucesso");
-            return Ok(relatorioVeterinario);
+            return Ok(veterinarioDtos);
         }
         catch (Exception ex)
         {
@@ -56,8 +62,8 @@ public class VeterinariosController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/veterinario/{id_vet:int}")]
-    public async Task<ActionResult<Veterinario>> GetVeterinario(int id_vet)
+    [Route("relatorio/veterinario/{id_vet:int}", Name = "GetVeterinariosById")]
+    public async Task<ActionResult<VeterinarioDTO>> GetVeterinario(int id_vet)
     {
         _logger.LogInformation("Iniciando a busca do veterinario");
 
@@ -67,7 +73,8 @@ public class VeterinariosController : ControllerBase
             {
                 var veterinario = await _veterinarioService.GetVeterinarioIdAsync(id_vet);
                 _logger.LogInformation("Veterinario foi encontrado com sucesso");
-                return Ok(veterinario);
+                var vetDto = CreateVeterinarioDto(veterinario);
+                return Ok(vetDto);
             }
             catch (Exception ex)
             {
@@ -91,7 +98,7 @@ public class VeterinariosController : ControllerBase
     /// <param name="veterinario">Dados para serem inseridos: </param>
     /// <returns>atualizar: </returns>
     [HttpPut]
-    [Route("atualizar/veterinario/{id_vet:int}")]
+    [Route("atualizar/veterinario/{id_vet:int}", Name = "UpdateVeterinario")]
     public async Task<IActionResult> PutVeterinario(int id_vet, Veterinario veterinario)
     {
         _logger.LogInformation("Iniciando a atualização do veterinario");
@@ -116,9 +123,6 @@ public class VeterinariosController : ControllerBase
 
             var veterinarioAtualizado = await _veterinarioService.UpdateVeterinarioAsync(id_vet, veterinario);
 
-            _context.Entry(veterinarioAtualizado).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Veterinario foi atualizado com sucesso");
             return Ok(veterinarioAtualizado);
@@ -174,11 +178,6 @@ public class VeterinariosController : ControllerBase
             else
             {
                 var veterinarioCriado = await _veterinarioService.CreateVeterinarioAsync(veterinario);
-
-                _context.Veterinarios.Add(veterinarioCriado);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Veterinario criado com sucesso.");
                 return Ok(veterinarioCriado);
             }
@@ -200,17 +199,14 @@ public class VeterinariosController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>Deletado: </returns>
     [HttpDelete]
-    [Route("deleta/veterinario/{id_vet:int}")]
+    [Route("deleta/veterinario/{id_vet:int}", Name = "DeletaVeterinario")]
     public async Task<IActionResult> DeleteVeterinario(int id_vet)
     {
         _logger.LogInformation("Iniciando a exclusão do veterinario");
 
         try
         {
-            var veterinario = await _veterinarioService.DeleteVeterinarioAsync(id_vet);
-
-            _context.Veterinarios.Remove(veterinario);
-            await _context.SaveChangesAsync();
+            await _veterinarioService.DeleteVeterinarioAsync(id_vet);
 
             _logger.LogInformation("Veterinario foi excluído com sucesso");
 
@@ -222,5 +218,33 @@ public class VeterinariosController : ControllerBase
             _logger.LogError(ex, "Erro ao deletar o veterinario");
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
+    }
+
+    private VeterinarioDTO CreateVeterinarioDto(Veterinario veterinario)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetVeterinariosById", new { id_vet = veterinario.Id_vet })!,
+                "self",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("GetAllVeterinarios", null)!,
+                "collection",
+                "GET"),
+
+            new LinkDTO(
+                Url.Link("UpdateVeterinario", new { id_vet = veterinario.Id_vet })!,
+                "update",
+                "PUT"),
+
+            new LinkDTO(
+                Url.Link("DeletaVeterinario", new { id_vet = veterinario.Id_vet })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new VeterinarioDTO(veterinario, links);
     }
 }

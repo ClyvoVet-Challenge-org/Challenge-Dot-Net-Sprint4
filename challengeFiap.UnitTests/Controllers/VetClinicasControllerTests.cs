@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class VetClinicasControllerTests
     {
 
-        private readonly Mock<IVetClinica> _VetClinicaServiceMock;
+        private readonly Mock<IVetClinicaService> _VetClinicaServiceMock;
 
         private readonly VetClinicasController _controller;
         private readonly ILogger<VetClinicasController> _logger;
@@ -23,7 +24,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public VetClinicasControllerTests()
         {
-            _VetClinicaServiceMock = new Mock<IVetClinica>();
+            _VetClinicaServiceMock = new Mock<IVetClinicaService>();
 
             var loggMock = new Mock<ILogger<VetClinicasController>>();
             _logger = loggMock.Object;
@@ -34,6 +35,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new VetClinicasController(_context, _logger, _VetClinicaServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -153,7 +158,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<VetClinica>>(okResult.Value);
+            var returnedList = Assert.IsType<List<VetClinicaDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -179,10 +184,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedVetClinica = Assert.IsType<VetClinica>(okResult.Value);
+            var returnedVetClinica = Assert.IsType<VetClinicaDTO>(okResult.Value);
 
             Assert.NotNull(returnedVetClinica);
-            Assert.Equal(id_clinica_vet, returnedVetClinica.Id_clinica_vet);
+            Assert.Equal(id_clinica_vet, returnedVetClinica.VetClinica.Id_clinica_vet);
+            Assert.Equal(4, returnedVetClinica.Dto.Count);
         }
 
         [Fact]

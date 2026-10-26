@@ -1,18 +1,19 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class ConsultaService : IConsultaRepository
+    public class ConsultaService : IConsultaService
     {
-        private readonly ConsultaOracleRepository _oracle;
-        private readonly ConsultaRepository _mongo;
+        private readonly IConsultaOracleRepository _oracle;
+        private readonly IConsultaMongoRepository _mongo;
 
-        public ConsultaService(ConsultaOracleRepository oracle, ConsultaRepository mongo)
+        public ConsultaService(IConsultaOracleRepository oracle, IConsultaMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,20 +28,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<Consulta>> GetAllConsultaAsync()
         {
-            var list = await _oracle.GetAllConsultaAsync();
-
-            await _mongo.GetAllConsultaAsync();
-
-            return list;
+            var oracleItems = await _oracle.GetAllConsultaAsync();
+            var mongoItems = await _mongo.GetAllConsultaAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_consulta);
         }
 
-        public async Task<Consulta> GetConsultaIdAsync(int id_consulta)
+        public Task<Consulta> GetConsultaIdAsync(int id_consulta)
         {
-            var item = await _oracle.GetConsultaIdAsync(id_consulta);
-
-            await _mongo.GetConsultaIdAsync(id_consulta);
-
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetConsultaIdAsync(id_consulta),
+                () => _mongo.GetConsultaIdAsync(id_consulta));
         }
 
         public async Task<Consulta> UpdateConsultaAsync(int id_consulta, Consulta consulta)

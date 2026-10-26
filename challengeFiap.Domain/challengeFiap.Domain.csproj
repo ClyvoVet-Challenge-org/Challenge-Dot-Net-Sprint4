@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DTO\**" />
     <Compile Remove="Interface\**" />
-    <EmbeddedResource Remove="DTO\**" />
     <EmbeddedResource Remove="Interface\**" />
-    <None Remove="DTO\**" />
     <None Remove="Interface\**" />
   </ItemGroup>
 

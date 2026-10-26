@@ -2,20 +2,23 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Domain;
 
 [Route("api/[controller]")]
 [ApiController]
 public class AnimalsController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly IAnimalRepository _animalService;
+    private readonly IAnimalService _animalService;
     private readonly ILogger<AnimalsController> _logger;
 
     public AnimalsController(
         AppDbContext context,
         ILogger<AnimalsController> logger,
-        IAnimalRepository animalService)
+        IAnimalService animalService)
     {
         _context = context;
         _logger = logger;
@@ -30,7 +33,7 @@ public class AnimalsController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Lista de animal</returns>
     [HttpGet]
-    [Route("relatorio/animal")]
+    [Route("relatorio/animal", Name = "GetAllAnimais")]
     public async Task<ActionResult<IEnumerable<Animal>>> GetAllAnimal()
     {
         _logger.LogInformation("Começando o relatorio dos animais.");
@@ -38,9 +41,12 @@ public class AnimalsController : ControllerBase
         {
             var relatorioAnimal = await _animalService.GetAllAnimalsAsync();
 
+            var animalDto = relatorioAnimal
+                .Select(animal => CreateAnimalDto(animal))
+                .ToList();
             _logger.LogInformation("Relatorio geral de animal realizado com sucesso");
 
-            return Ok(relatorioAnimal);
+            return Ok(animalDto);
         }
         catch (Exception ex)
         {
@@ -60,7 +66,7 @@ public class AnimalsController : ControllerBase
     /// <param name="id_animal">id do animal</param>
     /// <returns>Id encontrado</returns>
     [HttpGet]
-    [Route("relatorio/animal/{id_animal:int}")]
+    [Route("relatorio/animal/{id_animal:int}", Name = "GetAnimaisById")]
     public async Task<ActionResult<Animal>> GetAnimal(int id_animal)
     {
         _logger.LogInformation($"Começando a buscar pelo animal por seu id: {id_animal}");
@@ -70,7 +76,9 @@ public class AnimalsController : ControllerBase
             {
                 var animal = await _animalService.GetAnimalAsync(id_animal);
                 _logger.LogInformation("Animal foi encontrado com sucesso");
-                return Ok(animal);
+                var animalDTo = CreateAnimalDto(animal);
+                
+                return Ok(animalDTo);
             }
             catch (Exception ex)
             {
@@ -97,7 +105,7 @@ public class AnimalsController : ControllerBase
     /// <response code="404">Animal não encontrado</response>
     /// <returns>Atualizado</returns>
     [HttpPut]
-    [Route("atualizar/animal/{id_animal:int}")]
+    [Route("atualizar/animal/{id_animal:int}", Name = "UpdateAnimal")]
     public async Task<IActionResult> PutAnimal(int id_animal, Animal animal)
     {
         _logger.LogInformation("Começando o processo de atualização do animal com ID: {IdAnimal}", id_animal);
@@ -194,13 +202,13 @@ public class AnimalsController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>deletado</returns>
     [HttpDelete]
-    [Route("deleta/animal/{id_animal:int}")]
+    [Route("deleta/animal/{id_animal:int}", Name ="DeletaAnimal")]
     public async Task<IActionResult> DeleteAnimal(int id_animal)
     {
         _logger.LogInformation("Processo de deletar do animal");
         try
         {
-            var animal = await _animalService.DeleteAnimalAsync(id_animal);
+            await _animalService.DeleteAnimalAsync(id_animal);
 
             _logger.LogInformation("Animal foi excluído com sucesso");
 
@@ -212,5 +220,34 @@ public class AnimalsController : ControllerBase
 
             return BadRequest($"Erro em deletar: {e.Message}");
         }
+    }
+
+    private AnimalDTO CreateAnimalDto (Animal animal)
+    {
+        var link = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetAnimaisById", new {id_animal = animal.Id_animal})!,
+                "self",
+                "GET"
+                ),
+            new LinkDTO(
+                Url.Link("GetAllAnimais", null)!,
+                "collection",
+                "GET"),
+
+            new LinkDTO(
+                Url.Link("UpdateAnimal", new { id_animal = animal.Id_animal })!,
+                "update",
+                "PUT"),
+
+            new LinkDTO(
+                Url.Link("DeletaAnimal", new { id_animal = animal.Id_animal })!,
+                "delete",
+                "DELETE")
+
+        };
+
+        return new AnimalDTO(animal, link);
     }
 }

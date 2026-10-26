@@ -1,5 +1,6 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Dto;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class MedicamentoesControllerTests
     {
 
-        private readonly Mock<IMedicamentoRepository> _MedicamentoServiceMock;
+        private readonly Mock<IMedicamentoService> _MedicamentoServiceMock;
 
         private readonly MedicamentoesController _controller;
         private readonly ILogger<MedicamentoesController> _logger;
@@ -23,7 +24,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public MedicamentoesControllerTests()
         {
-            _MedicamentoServiceMock = new Mock<IMedicamentoRepository>();
+            _MedicamentoServiceMock = new Mock<IMedicamentoService>();
             var loggMock = new Mock<ILogger<MedicamentoesController>>();
             _logger = loggMock.Object;
 
@@ -33,6 +34,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new MedicamentoesController(_context, _logger, _MedicamentoServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -134,7 +139,7 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<Medicamento>>(okResult.Value);
+            var returnedList = Assert.IsType<List<MedicamentoDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
@@ -163,10 +168,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedMedicamento = Assert.IsType<Medicamento>(okResult.Value);
+            var returnedMedicamento = Assert.IsType<MedicamentoDTO>(okResult.Value);
 
             Assert.NotNull(returnedMedicamento);
-            Assert.Equal(id_medicamento, returnedMedicamento.Id_medicamento);
+            Assert.Equal(id_medicamento, returnedMedicamento.Medicamento.Id_medicamento);
+            Assert.Equal(4, returnedMedicamento.Dto.Count);
         }
 
         [Fact]

@@ -1,6 +1,9 @@
 ﻿using challengeFiap.Application.Diagnostics;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
@@ -9,17 +12,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class AnimalService : IAnimalRepository
+    public class AnimalService : IAnimalService
     {
-        private readonly AnimalOracleRepository _animalOracle;
-        private readonly AnimalRepository _animalMongo;
+        private readonly IAnimalOracleRepository _animalOracle;
+        private readonly IAnimalMongoRepository _animalMongo;
 
-        public AnimalService(AnimalOracleRepository animalOracle, AnimalRepository animalMongo)
+        public AnimalService(IAnimalOracleRepository animalOracle, IAnimalMongoRepository animalMongo)
         {
             _animalOracle = animalOracle;
             _animalMongo = animalMongo;
@@ -34,18 +35,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<Animal>> GetAllAnimalsAsync()
         {
-            var animal = await _animalOracle.GetAllAnimalsAsync();
-
-            await _animalMongo.GetAllAnimalsAsync();
-
-            return animal;
+            var oracleItems = await _animalOracle.GetAllAnimalsAsync();
+            var mongoItems = await _animalMongo.GetAllAnimalsAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_animal);
         }
 
-        public async Task<Animal> GetAnimalAsync(int id_animal)
+        public Task<Animal> GetAnimalAsync(int id_animal)
         {
-            var animal = await _animalOracle.GetAnimalAsync(id_animal);
-            await _animalMongo.GetAnimalAsync(id_animal);
-            return animal;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _animalOracle.GetAnimalAsync(id_animal),
+                () => _animalMongo.GetAnimalAsync(id_animal));
         }
 
         public async Task<Animal> UpdateAnimalAsync(int id_animal, Animal animal)
@@ -59,7 +59,6 @@ namespace challengeFiap.Application.Service
         {
             var deletado = await _animalOracle.DeleteAnimalAsync(id_animal);
             await _animalMongo.DeleteAnimalAsync(id_animal);
-
             return deletado;
         }
     }

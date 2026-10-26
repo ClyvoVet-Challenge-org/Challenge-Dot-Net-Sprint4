@@ -1,6 +1,8 @@
 ﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Infrastruture.Data;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +17,7 @@ namespace challengeFiap.UnitTests.Controllers
     public class ClinicaControllerTests
     {
 
-        private readonly Mock<IClinicaRepository> _ClinicaServiceMock;
+        private readonly Mock<IClinicaService> _ClinicaServiceMock;
 
         private readonly ClinicasController _controller;
         private readonly ILogger<ClinicasController> _logger;
@@ -23,7 +25,7 @@ namespace challengeFiap.UnitTests.Controllers
 
         public ClinicaControllerTests()
         {
-            _ClinicaServiceMock = new Mock<IClinicaRepository>();
+            _ClinicaServiceMock = new Mock<IClinicaService>();
             var loggMock = new Mock<ILogger<ClinicasController>>();
             _logger = loggMock.Object;
 
@@ -33,6 +35,11 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new ClinicasController(_context, _logger, _ClinicaServiceMock.Object);
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
+                .Returns((string? routeName, object? _) => $"https://localhost/api/clinicas/{routeName}");
+            _controller.Url = urlHelper.Object;
         }
 
         //Criação
@@ -109,10 +116,37 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<Clinica>>(okResult.Value);
+            var returnedList = Assert.IsType<List<ClinicaDTO>>(okResult.Value);
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);
+            Assert.Equal(4, returnedList[0].Dto.Count);
+            Assert.Collection(
+                returnedList[0].Dto,
+                link =>
+                {
+                    Assert.Equal("self", link.Rel);
+                    Assert.Equal("GET", link.Method);
+                    Assert.Contains("GetClinicasById", link.Href);
+                },
+                link =>
+                {
+                    Assert.Equal("collection", link.Rel);
+                    Assert.Equal("GET", link.Method);
+                    Assert.Contains("GetAllClinicas", link.Href);
+                },
+                link =>
+                {
+                    Assert.Equal("update", link.Rel);
+                    Assert.Equal("PUT", link.Method);
+                    Assert.Contains("UpdateClinica", link.Href);
+                },
+                link =>
+                {
+                    Assert.Equal("delete", link.Rel);
+                    Assert.Equal("DELETE", link.Method);
+                    Assert.Contains("DeletaClinica", link.Href);
+                });
         }
 
         [Fact]
@@ -135,10 +169,11 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedClinica = Assert.IsType<Clinica>(okResult.Value);
+            var returnedClinica = Assert.IsType<ClinicaDTO>(okResult.Value);
 
             Assert.NotNull(returnedClinica);
-            Assert.Equal(id_clinica, returnedClinica.Id_clinica);
+            Assert.Equal(id_clinica, returnedClinica.Clinica.Id_clinica);
+            Assert.Equal("self", returnedClinica.Dto[0].Rel);
         }
     }
 }

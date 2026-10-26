@@ -1,18 +1,17 @@
 ﻿using challengeFiap.Domain.Entities;
+using challengeFiap.Application.Interfaces;
 using challengeFiap.Domain.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
-using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
+using challengeFiap.Domain.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.OracleRepository;
 
 namespace challengeFiap.Application.Service
 {
-    public class VeterinariosService : IVeterinarioRepository
+    public class VeterinariosService : IVeterinarioService
     {
-        private readonly VeterinarioOracleRepository _oracle;
-        private readonly VeterinarioRepository _mongo;
+        private readonly IVeterinarioOracleRepository _oracle;
+        private readonly IVeterinarioMongoRepository _mongo;
 
-        public VeterinariosService(VeterinarioOracleRepository oracle, VeterinarioRepository mongo)
+        public VeterinariosService(IVeterinarioOracleRepository oracle, IVeterinarioMongoRepository mongo)
         {
             _oracle = oracle;
             _mongo = mongo;
@@ -27,16 +26,17 @@ namespace challengeFiap.Application.Service
 
         public async Task<IEnumerable<Veterinario>> GetAllVeterinarioAsync()
         {
-            var list = await _oracle.GetAllVeterinarioAsync();
-            await _mongo.GetAllVeterinarioAsync();
-            return list;
+            var oracleItems = await _oracle.GetAllVeterinarioAsync();
+            var mongoItems = await _mongo.GetAllVeterinarioAsync();
+            return RepositoryResultMerger.MergeById(
+                oracleItems, mongoItems, item => item.Id_vet);
         }
 
-        public async Task<Veterinario> GetVeterinarioIdAsync(int id_veterinario)
+        public Task<Veterinario> GetVeterinarioIdAsync(int id_veterinario)
         {
-            var item = await _oracle.GetVeterinarioIdAsync(id_veterinario);
-            await _mongo.GetVeterinarioIdAsync(id_veterinario);
-            return item;
+            return RepositoryResultMerger.FindByIdAsync(
+                () => _oracle.GetVeterinarioIdAsync(id_veterinario),
+                () => _mongo.GetVeterinarioIdAsync(id_veterinario));
         }
 
         public async Task<Veterinario> UpdateVeterinarioAsync(int id_veterinario, Veterinario veterinario)

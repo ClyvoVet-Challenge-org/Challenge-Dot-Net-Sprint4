@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
+using Microsoft.AspNetCore.Components.Forms;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,8 +14,8 @@ public class EnderecoTutorsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<EnderecoTutorsController> _logger;
-    private readonly IenderecoTutorRepository _enderecoTutorService;
-    public EnderecoTutorsController(AppDbContext context, ILogger<EnderecoTutorsController> logger, IenderecoTutorRepository enderecoTutorService)
+    private readonly IEnderecoTutorService _enderecoTutorService;
+    public EnderecoTutorsController(AppDbContext context, ILogger<EnderecoTutorsController> logger, IEnderecoTutorService enderecoTutorService)
     {
         _context = context;
         _logger = logger;
@@ -26,17 +30,20 @@ public class EnderecoTutorsController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio endereço responsavel</returns>
     [HttpGet]
-    [Route("relatorio/enderecoresponsavel")]
-    public async Task<ActionResult<IEnumerable<EnderecoTutor>>> GetAllEnderecoResponsavel()
+    [Route("relatorio/enderecoresponsavel", Name = "GetAllEnderecosResponsaveis")]
+    public async Task<ActionResult<IEnumerable<EnderecoTutorDTO>>> GetAllEnderecoResponsavel()
     {
         _logger.LogInformation("Iniciando a busca de endereço responsavel");
 
         try
         {
             var relatorioEnResponsavel = await _enderecoTutorService.GetAllEnderecoTutorAsync();
+            var enderecoTutorDtos = relatorioEnResponsavel
+                .Select(endereco => CreateEnderecoTutorDto(endereco))
+                .ToList();
 
             _logger.LogInformation("Busca de endereço responsavel concluída com sucesso");
-            return Ok(relatorioEnResponsavel);
+            return Ok(enderecoTutorDtos);
         }
         catch (Exception ex)
         {
@@ -55,8 +62,8 @@ public class EnderecoTutorsController : ControllerBase
     /// <response code="404">Id não encontrado</response>
     /// <returns>Relatorio: </returns>
     [HttpGet]
-    [Route("relatorio/enderecoresponsavel/{id_endereco_responsavel:int}")]
-    public async Task<ActionResult<EnderecoTutor>> GetEnderecoResponsavel(int id_endereco_responsavel)
+    [Route("relatorio/enderecoresponsavel/{id_endereco_responsavel:int}", Name = "GetEnderecosResponsaveisById")]
+    public async Task<ActionResult<EnderecoTutorDTO>> GetEnderecoResponsavel(int id_endereco_responsavel)
     {
         _logger.LogInformation("Iniciando a busca de endereço responsavel pelo ID {IdEnderecoResponsavel}", id_endereco_responsavel);
 
@@ -66,7 +73,8 @@ public class EnderecoTutorsController : ControllerBase
             {
                 var enderecoresponsavel = await _enderecoTutorService.GetEnderecoTutorIdAsync(id_endereco_responsavel);
                 _logger.LogInformation("Endereço responsavel foi encontrado com sucesso");
-                return Ok(enderecoresponsavel);
+                var enderecoTutor = CreateEnderecoTutorDto(enderecoresponsavel);
+                return Ok(enderecoTutor);
             }
             catch (Exception ex)
             {
@@ -94,7 +102,7 @@ public class EnderecoTutorsController : ControllerBase
     /// <response code="404">Endereço responsavel não encontrado</response>
     /// <returns>Atualizar: </returns>
     [HttpPut]
-    [Route("atualizar/enderecoresponsavel/{id_endereco_responsavel:int}")]
+    [Route("atualizar/enderecoresponsavel/{id_endereco_responsavel:int}", Name = "UpdateEnderecoResponsavel")]
     public async Task<IActionResult> PutEnderecoResponsavel(int id_endereco_responsavel, EnderecoTutor enderecoresponsavel)
     {
         _logger.LogInformation("Iniciando a atualização do endereço responsavel");
@@ -109,11 +117,8 @@ public class EnderecoTutorsController : ControllerBase
         {
             var enderecoTutorAtualizado = await _enderecoTutorService.UpdateEnderecoTutorAsync(id_endereco_responsavel, enderecoresponsavel);
 
-            _context.Entry(enderecoTutorAtualizado).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
-
             _logger.LogInformation("Endereço responsavel atualizado com sucesso");
+            
             return Ok(enderecoTutorAtualizado);
         }
         catch (DbUpdateConcurrencyException)
@@ -160,10 +165,6 @@ public class EnderecoTutorsController : ControllerBase
             {
                 var enderecoTutorCriado = await _enderecoTutorService.CreateEnderecoTutorAsync(enderecoresponsavel);
 
-                _context.EnderecoTutors.Add(enderecoTutorCriado);
-
-                await _context.SaveChangesAsync();
-
                 _logger.LogInformation("Endereço responsavel criado com sucesso");
                 return Ok(enderecoTutorCriado);
             }
@@ -192,17 +193,15 @@ public class EnderecoTutorsController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns>Deletado: </returns>
     [HttpDelete]
-    [Route("deleta/enderecoresponsavel/{id_endereco_responsavel:int}")]
+    [Route("deleta/enderecoresponsavel/{id_endereco_responsavel:int}", Name = "DeletaEnderecoResponsavel")]
     public async Task<IActionResult> DeleteEnderecoResponsavel(int id_endereco_responsavel)
     {
         _logger.LogInformation("Iniciando a exclusão do endereço responsavel");
 
         try
         {
-            var enderecoresponsavel = await _enderecoTutorService.DeleteEnderecoTutorAsync(id_endereco_responsavel);
+            await _enderecoTutorService.DeleteEnderecoTutorAsync(id_endereco_responsavel);
 
-            _context.EnderecoTutors.Remove(enderecoresponsavel);
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("EnderecoTutor foi excluído com sucesso");
             return NoContent();
@@ -213,5 +212,33 @@ public class EnderecoTutorsController : ControllerBase
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
 
+    }
+
+    private EnderecoTutorDTO CreateEnderecoTutorDto(EnderecoTutor enderecoTutor)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetEnderecosResponsaveisById", new { id_endereco_responsavel = enderecoTutor.Id_endereco_tutor })!,
+                "self",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("GetAllEnderecosResponsaveis", null)!,
+                "collection",
+                "GET"),
+            
+            new LinkDTO(
+                Url.Link("UpdateEnderecoResponsavel", new { id_endereco_responsavel = enderecoTutor.Id_endereco_tutor })!,
+                "update",
+                "PUT"),
+            
+            new LinkDTO(
+                Url.Link("DeletaEnderecoResponsavel", new { id_endereco_responsavel = enderecoTutor.Id_endereco_tutor })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new EnderecoTutorDTO(enderecoTutor, links);
     }
 }

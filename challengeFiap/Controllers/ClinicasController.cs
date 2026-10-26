@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using challengeFiap.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain.Interfaces;
 using challengeFiap.Application.Service;
+using challengeFiap.Domain;
+using challengeFiap.Domain.Dto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -11,12 +14,12 @@ public class ClinicasController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ClinicasController> _logger;
-    private readonly IClinicaRepository _clinicaService;
+    private readonly IClinicaService _clinicaService;
 
     public ClinicasController(
         AppDbContext context,
         ILogger<ClinicasController> logger,
-        IClinicaRepository clinicaService)
+        IClinicaService clinicaService)
     {
         _context = context;
         _logger = logger;
@@ -31,18 +34,21 @@ public class ClinicasController : ControllerBase
     /// <response code="200">Busca feita com sucesso</response>
     /// <returns>Relatorio clinica</returns>
     [HttpGet]
-    [Route("relatorio/clinica")]
-    public async Task<ActionResult<IEnumerable<Clinica>>> GetAllClinica()
+    [Route("relatorio/clinica", Name = "GetAllClinicas")]
+    public async Task<ActionResult<IEnumerable<ClinicaDTO>>> GetAllClinica()
     {
         _logger.LogInformation("Iniciando a busca de clinicas");
 
         try
         {
             var relatorioClinica = await _clinicaService.GetAllClinicaAsync();
+            var clinicaDtos = relatorioClinica
+                .Select(clinica => CreateClinicaDto(clinica))
+                .ToList();
 
             _logger.LogInformation("Busca de clinicas concluída com sucesso");
 
-            return Ok(relatorioClinica);
+            return Ok(clinicaDtos);
         }
         catch (Exception ex)
         {
@@ -62,8 +68,8 @@ public class ClinicasController : ControllerBase
     /// <param name="id_clinica">Id de buscar da clinica</param>
     /// <returns>Relatorio clinica</returns>
     [HttpGet]
-    [Route("relatorio/clinica/{id_clinica:int}")]
-    public async Task<ActionResult<Clinica>> GetClinica(int id_clinica)
+    [Route("relatorio/clinica/{id_clinica:int}", Name = "GetClinicasById")]
+    public async Task<ActionResult<ClinicaDTO>> GetClinica(int id_clinica)
     {
         _logger.LogInformation(
             "Iniciando a busca de clinica com ID: {IdClinica}",
@@ -75,7 +81,8 @@ public class ClinicasController : ControllerBase
             {
                 var clinica = await _clinicaService.GetClinicaIdAsync(id_clinica);
                 _logger.LogInformation("Clinica foi encontrada com sucesso");
-                return Ok(clinica);
+                var clinicadto = CreateClinicaDto(clinica);
+                return Ok(clinicadto);
             }
             catch (Exception ex)
             {
@@ -102,7 +109,7 @@ public class ClinicasController : ControllerBase
     /// <response code="404">clinica não encontrado</response>
     /// <returns>Atualização clinica</returns>
     [HttpPut]
-    [Route("atualizar/clinica/{id_clinica:int}")]
+    [Route("atualizar/clinica/{id_clinica:int}", Name = "UpdateClinica")]
     public async Task<IActionResult> PutClinica(int id_clinica, Clinica clinica)
     {
         _logger.LogInformation("Iniciando atualizacao de clinica com ID: {IdClinica}",id_clinica);
@@ -116,10 +123,6 @@ public class ClinicasController : ControllerBase
         try
         {
             var clinicaAtualizada = await _clinicaService.UpdateClinicaAsync(id_clinica, clinica);
-
-            _context.Entry(clinicaAtualizada).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Atualizacao de clinica do id");
 
@@ -179,10 +182,6 @@ public class ClinicasController : ControllerBase
 
             var clinicaCriada = await _clinicaService.CreateadAsync(clinica);
 
-            _context.Clinicas.Add(clinicaCriada);
-
-            await _context.SaveChangesAsync();
-
             _logger.LogInformation("Clinica {IdClinica}, criada com sucesso",clinica.Id_clinica);
 
             return Ok(clinicaCriada);
@@ -206,17 +205,14 @@ public class ClinicasController : ControllerBase
     /// <response code="400">Erro ao processar.</response>
     /// <returns></returns>
     [HttpDelete]
-    [Route("deleta/clinica/{id_clinica:int}")]
+    [Route("deleta/clinica/{id_clinica:int}", Name = "DeletaClinica")]
     public async Task<IActionResult> DeleteClinica(int id_clinica)
     {
         _logger.LogInformation("Iniciando remoção de clinica. ID: {IdClinica}",id_clinica);
 
         try
         {
-            var clinica = await _clinicaService.DeleteClinicaAsync(id_clinica);
-
-            _context.Clinicas.Remove(clinica);
-            await _context.SaveChangesAsync();
+            await _clinicaService.DeleteClinicaAsync(id_clinica);
 
             _logger.LogInformation("Clinica foi excluída com sucesso");
 
@@ -227,5 +223,33 @@ public class ClinicasController : ControllerBase
             _logger.LogError(ex,"Erro em deletar clinica.");
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
+    }
+
+    private ClinicaDTO CreateClinicaDto(Clinica clinica)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetClinicasById", new { id_clinica = clinica.Id_clinica })!,
+                "self",
+                "GET"),
+
+            new LinkDTO(
+                Url.Link("GetAllClinicas", null)!,
+                "collection",
+                "GET"),
+
+            new LinkDTO(
+                Url.Link("UpdateClinica", new { id_clinica = clinica.Id_clinica })!,
+                "update",
+                "PUT"),
+
+            new LinkDTO(
+                Url.Link("DeletaClinica", new { id_clinica = clinica.Id_clinica })!,
+                "delete",
+                "DELETE")
+        };
+
+        return new ClinicaDTO(clinica, links);
     }
 }
