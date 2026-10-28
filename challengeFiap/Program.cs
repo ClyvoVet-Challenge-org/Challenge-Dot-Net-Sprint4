@@ -1,13 +1,20 @@
+using challengeFiap.Application.Service.Token;
 using challengeFiap.Infrastruture;
 using challengeFiap.Infrastruture.Data;
 using ChallengeFiap.Infrastruture.Data;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens.Experimental;
+using Microsoft.OpenApi;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
+using System.Reflection.Metadata;
+using System.Text;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -101,6 +108,11 @@ try
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddOpenApi();
+
+    var jwtKey = builder.Configuration["Jwt:Key"];
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+    var jwtAudience = builder.Configuration["Jwt:Audience"];
+
     builder.Services.AddSwaggerGen(options =>
     {
         var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -109,8 +121,44 @@ try
         {
             options.IncludeXmlComments(xmlPath);
         }
-    }
-    );
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Insera o token da jwt para realizar a autenticacao"
+        });
+        options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
+    });
+
+    builder.Services.AddSingleton<TokenService>();
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)),
+
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+    builder.Services.AddAuthorization();
 
     //Parte de Serialização
 
