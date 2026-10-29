@@ -38,12 +38,72 @@ public class AnimalsController : ControllerBase
         _logger.LogInformation("Começando o relatorio dos animais.");
         try
         {
-            var relatorioAnimal = await _animalService.GetAllAnimalsAsync();
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? especie = Request.Query["especie"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "nome";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
 
-            var animalDto = relatorioAnimal
-                .Select(animal => CreateAnimalDto(animal))
-                .ToList();
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
+            var relatorioAnimal = await _animalService.GetAllAnimalsAsync();
+            var query = relatorioAnimal.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(especie))
+            {
+                query = query.Where(a =>
+                a.Especie_animal != null &&
+                a.Especie_animal.Equals(
+                    especie.Trim(),
+                    StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(a =>
+                   a.Nm_animal != null &&
+                   a.Nm_animal.Contains(
+                   search.Trim(),
+                   StringComparison.OrdinalIgnoreCase));
+            }
             _logger.LogInformation("Relatorio geral de animal realizado com sucesso");
+
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(a => a.Id_animal)
+                    : query.OrderByDescending(a => a.Id_animal),
+
+                "especie" => ascending
+                    ? query.OrderBy(a => a.Especie_animal)
+                    : query.OrderByDescending(a => a.Especie_animal),
+
+                _ => ascending
+                    ? query.OrderBy(a => a.Nm_animal)
+                    : query.OrderByDescending(a => a.Nm_animal)
+            };
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var animalDTO = items.Select(CreateAnimalDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+            pageNumber,
+            pageSize,
+            especie,
+            search,
+            sortBy,
+            ascending,
+            totalPages);
 
             return Ok(animalDto);
         }
@@ -249,4 +309,66 @@ public class AnimalsController : ControllerBase
 
         return new AnimalDTO(animal, link);
     }
+    private List<LinkDTO> CreatePaginationLinks(
+        int pageNumber,
+        int pageSize,
+        string? especie,
+        string? search,
+        string sortBy,
+        bool ascending,
+        int totalPages)
+    {
+        var routeValues = new
+        {
+            pageNumber,
+            pageSize,
+            especie,
+            search,
+            sortBy,
+            ascending
+        };
+
+        var links = new List<LinkDTO>
+    {
+        new LinkDTO(
+            Url.Link("GetAllAnimais", routeValues)!,
+            "self",
+            "GET")
+    };
+
+        if (pageNumber < totalPages)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllAnimais", new
+                {
+                    pageNumber = pageNumber + 1,
+                    pageSize,
+                    especie,
+                    search,
+                    sortBy,
+                    ascending
+                })!,
+                "next_page",
+                "GET"));
+        }
+
+        if (pageNumber > 1)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllAnimais", new
+                {
+                    pageNumber = pageNumber - 1,
+                    pageSize,
+                    especie,
+                    search,
+                    sortBy,
+                    ascending
+                })!,
+                "prev_page",
+                "GET"));
+        }
+
+        return links;
+    }
+
 }
