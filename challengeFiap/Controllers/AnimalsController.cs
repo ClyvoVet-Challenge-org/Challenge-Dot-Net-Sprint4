@@ -105,7 +105,16 @@ public class AnimalsController : ControllerBase
             ascending,
             totalPages);
 
-            return Ok(animalDto);
+            var response = new PagedResponse<AnimalDTO>(
+                animalDTO,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -336,20 +345,20 @@ public class AnimalsController : ControllerBase
             "GET")
     };
 
-        if (pageNumber < totalPages)
-        {
-            links.Add(new LinkDTO(
-                Url.Link("GetAllAnimais", new
-                {
-                    pageNumber = pageNumber + 1,
-                    pageSize,
-                    especie,
-                    search,
-                    sortBy,
-                    ascending
-                })!,
-                "next_page",
-                "GET"));
+    if (pageNumber < totalPages)
+    {
+        links.Add(new LinkDTO(
+            Url.Link("GetAllAnimais", new
+            {
+                pageNumber = pageNumber + 1,
+                pageSize,
+                especie,
+                search,
+                sortBy,
+                ascending
+            })!,
+            "next_page",
+            "GET"));
         }
 
         if (pageNumber > 1)

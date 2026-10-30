@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
 using challengeFiap.Application.InterfacesService;
-using Microsoft.EntityFrameworkCore;
-using challengeFiap.Domain.Entities;
-using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain;
 using challengeFiap.Domain.Dto;
+using challengeFiap.Domain.Entities;
+using challengeFiap.Domain.Enums;
+using challengeFiap.Infrastruture.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -37,10 +38,36 @@ public class CarteiraVacinalsController : ControllerBase
     public async Task<ActionResult<IEnumerable<CarteiraVacinalDTO>>> GetAllCarteiraVacinal()
     {
         _logger.LogInformation("Começado a busca de carteira vacinal do pet.");
-
         try
         {
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? nm_vacina = Request.Query["nm_vacina"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "nome";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
             var relatorioCarteiraVacinal = await _carteiraVacinalService.GetAllCarteiraVacinalAsync();
+            var query = relatorioCarteiraVacinal.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(nm_vacina))
+            {
+                query = query.Where(c =>
+                    c.Nm_vacina != null &&
+                    c.Nm_vacina.Contains(
+                        nm_vacina.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search) && Enum.TryParse<StatusVacinacao>(search, true, out var status))
+            {
+                query = query.Where(c => c.St_vacina == status);
+            }
+
             var carteiraVacinalDtos = relatorioCarteiraVacinal
                 .Select(carteira => CreateCarteiraVacinalDto(carteira))
                 .ToList();
@@ -255,5 +282,64 @@ public class CarteiraVacinalsController : ControllerBase
         };
 
         return new CarteiraVacinalDTO(carteiraVacinal, links);
+    }
+    private List<LinkDTO> CreatePaginationLinks(
+        int pageNumber,
+        int pageSize,
+        string? nm_vacina,
+        string? search,
+        string sortBy,
+        bool ascending,
+        int totalPages
+        )
+    {
+        var routeValues = new
+        {
+            pageNumber,
+            pageSize,
+            nm_vacina,
+            search,
+            sortBy,
+            ascending
+        };
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetAllCarteirasVacinais", routeValues)!,
+                "self",
+                "GET")
+        };
+        if (pageNumber < totalPages)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllCarteirasVacinais", new
+                {
+                    pageNumber = pageNumber + 1,
+                    pageSize,
+                    nm_vacina,
+                    search,
+                    sortBy,
+                    ascending
+                })!,
+                "next_page",
+                "GET")
+                );
+        }
+        if (pageNumber >1)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllCarteirasVacinais", new
+                {
+                    pageNumber = pageNumber - 1,
+                    pageSize,
+                    nm_vacina,
+                    search,
+                    sortBy,
+                    ascending
+                })!,
+                "prev_page",
+                "GET"));
+        }
+        return links;
     }
 }

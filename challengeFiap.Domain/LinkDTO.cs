@@ -20,4 +20,5 @@ namespace challengeFiap.Domain
             Method = method;
         }
     }
+    public record PagedResponse<T>(IEnumerable<T> Items, int PageNumber, int PageSize, int TotalPages, int TotalRecords, List<LinkDTO> Links);
 }
