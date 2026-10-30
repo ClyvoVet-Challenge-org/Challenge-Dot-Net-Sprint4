@@ -68,11 +68,48 @@ public class CarteiraVacinalsController : ControllerBase
                 query = query.Where(c => c.St_vacina == status);
             }
 
-            var carteiraVacinalDtos = relatorioCarteiraVacinal
-                .Select(carteira => CreateCarteiraVacinalDto(carteira))
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(a => a.Id_carteiraVacinal)
+                    : query.OrderByDescending(a => a.Id_carteiraVacinal),
+                "nome vacina" => ascending
+                    ? query.OrderBy(a => a.Nm_vacina)
+                    : query.OrderByDescending(a => a.Nm_vacina),
+                _ => ascending
+                    ? query.OrderBy(a => a.St_vacina)
+                    : query.OrderByDescending(a => a.St_vacina)
+            };
+            var totalRecords = query.Count();
+
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
-            _logger.LogInformation("Busca realizada com sucesso.");
-            return Ok(carteiraVacinalDtos);
+
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var carteiraVacinalDtos = items.Select(CreateCarteiraVacinalDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                nm_vacina,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<CarteiraVacinalDTO>(
+                carteiraVacinalDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks);
+
+            return Ok(response);
         }
         catch (Exception ex)
         {
