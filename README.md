@@ -28,17 +28,17 @@ Como os animais não conseguem comunicar o que sentem, é comum que os tutores s
 - 🐶 Dados do animal (idade, peso, espécie, raça)
 - 💉 Carteira de vacinação
 - 📋 Histórico de consultas e prescrições
-- 👤 Informações do responsável
+- 👤 Informações do Tutor
 - 📍 Localização do pet (caso more em endereço diferente do tutor)
 - 📅 Agenda de próximas consultas com alertas de cancelamento ou alteração
 
 <h2> 📲 Engajamento via WhatsApp </h2>
 
-<p>Para aumentar a recorrência de visitas, o sistema envia mensagens automáticas ao responsável pelo animal após um determinado período desde a última consulta ou vacinação, perguntando sobre o interesse em agendar um novo atendimento — com opção de confirmar ou recusar diretamente pela mensagem.</p>
+<p>Para aumentar a recorrência de visitas, o sistema envia mensagens automáticas ao Tutor pelo animal após um determinado período desde a última consulta ou vacinação, perguntando sobre o interesse em agendar um novo atendimento — com opção de confirmar ou recusar diretamente pela mensagem.</p>
 
 <h2>⚙️ Sobre o Backend (.NET) </h2>
 
-<p>O projeto .NET atua como o **sistema de backend CRUD** da plataforma, responsável por:</p>
+<p>O projeto .NET atua como o **sistema de backend CRUD** da plataforma, Tutor por:</p>
 
 - Gerenciar todos os dados da aplicação no Banco de Dados Oracle
 - Expor APIs REST para que o Frontend consuma e interaja com os dados
@@ -64,13 +64,13 @@ Rota base: `api/[controller]`
 - PUT: atualizar/veterinario/{id_vet:int}
 - DELETE: deleta/veterinario/{id_vet:int}
 
-<h4>👤 Responsável</h4>
+<h4>👤 Tutor</h4>
 
-- GET - ALL: relatorio/responsavel
-- GET - ID: relatorio/responsavel/{id_responsavel:int}
-- POST: criar/responsavel
-- PUT: atualizar/responsavel/{id_responsavel:int}
-- DELETE: deleta/responsavel/{id_responsavel:int}
+- GET - ALL: relatorio/tutor
+- GET - ID: relatorio/tutor/{id_tutor:int}
+- POST: criar/tutor
+- PUT: atualizar/tutor/{id_tutor:int}
+- DELETE: deleta/tutor/{id_tutor:int}
 
 <h4> 📅 Consulta</h4>
 
@@ -113,13 +113,13 @@ Rota base: `api/[controller]`
 - PUT: atualizar/enderecoclinica/{id_endereco_clinica:int}
 - DELETE: deleta/enderecoclinica/{id_endereco_clinica:int}
 
-<h4> 🏠 Endereço Responsável</h4>
+<h4> 🏠 Endereço Tutor</h4>
 
-- GET - ALL: relatorio/enderecoresponsavel
-- GET - ID: relatorio/enderecoresponsavel/{id_endereco_responsavel:int}
-- POST: criar/enderecoresponsavel
-- PUT: atualizar/enderecoresponsavel/{id_endereco_responsavel:int}
-- DELETE: deleta/enderecoresponsavel/{id_endereco_responsavel:int}
+- GET - ALL: relatorio/enderecotutor
+- GET - ID: relatorio/enderecotutor/{id_endereco_tutor:int}
+- POST: criar/enderecotutor
+- PUT: atualizar/enderecotutor/{id_endereco_tutor:int}
+- DELETE: deleta/enderecotutor/{id_endereco_tutor:int}
 
 <h4> 🏢 VetClinica</h4>
 
