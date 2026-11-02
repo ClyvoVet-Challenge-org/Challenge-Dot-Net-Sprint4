@@ -192,6 +192,15 @@ https://localhost:{PORTA}/swagger
 ```
 > Substitua `{PORTA}` pelo número exibido no terminal ao iniciar a aplicação.
 
+Ou
+
+<h4> 8. Acessar o Scalar</h4>
+
+```
+https://localhost:{PORTA}/swagger
+```
+> Substitua `{PORTA}` pelo número exibido no terminal ao iniciar a aplicação.
+
 ---
 <h4>🛠️ Tecnologias Utilizadas</h4>
 
