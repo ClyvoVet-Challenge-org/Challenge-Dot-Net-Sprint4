@@ -284,6 +284,16 @@ Para deixar o nosso codigo mais limpo foi feito alteração presente nas pasta p
 
 <img width="363" height="247" alt="Pastass" src="https://github.com/user-attachments/assets/bc25c3e0-b9fd-4dd8-83ea-5cad9ea962ee" />
 
+<h4>Sobre o JWT</h4>
+
+Conforme pedido o JWT é uma forma de criar token para assim controlar o acesso de entrade dados presente.
+
+Para conseguir o token deve no Auth pode ser tanto no swagger ou no scalar, dentro dentro vai a parte de login que vai ter usuario e senha.
+
+Para pegar o token deve colocar no usuario como admin e senha como: 123456.
+
+Assim voce tera o token necessario para receber validação do sistema.
+
 <h5>Questão do log</h5>
 
 	Dentro do programa, especificamente dentro dos controllers principais, foram adicionados os logs conforme foi pedido. Quando rodar o programa, no terminal, essas frases do log irão aparecer no terminal quando estiver rodando ele ou executando uma aplicação, tanto get, get all, created, delete e update.
