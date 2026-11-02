@@ -36,13 +36,83 @@ public class EnderecoClinicasController : ControllerBase
 
         try
         {
-            var relatorioEnClinica = await _enderecoClinicaService.GetAllEnderecoClinicaAsync();
-            var enderecoClinicaDtos = relatorioEnClinica
-                .Select(endereco => CreateEnderecoClinicaDto(endereco))
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? cidade = Request.Query["cidade"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "cidade";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
+            var relatorioEnderecoClinica = await _enderecoClinicaService.GetAllEnderecoClinicaAsync();
+            var query = relatorioEnderecoClinica.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(cidade))
+            {
+                query = query.Where(e =>
+                    e.Cidade != null &&
+                    e.Cidade.Contains(
+                        cidade.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(e =>
+                    e.Estado != null &&
+                    e.Estado.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(e => e.Id_endereco_clinica)
+                    : query.OrderByDescending(e => e.Id_endereco_clinica),
+
+                "estado" => ascending
+                    ? query.OrderBy(e => e.Estado)
+                    : query.OrderByDescending(e => e.Estado),
+
+                _ => ascending
+                    ? query.OrderBy(e => e.Cidade)
+                    : query.OrderByDescending(e => e.Cidade)
+            };
+
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var enderecoClinicaDtos = items.Select(CreateEnderecoClinicaDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                cidade,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<EnderecoClinicaDTO>(
+                enderecoClinicaDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
             _logger.LogInformation("Busca de endereço clinica concluída com sucesso");
-            return Ok(enderecoClinicaDtos);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -108,7 +178,7 @@ public class EnderecoClinicasController : ControllerBase
 
         if (id_endereco_clinica != enderecoclinica.Id_endereco_clinica)
         {
-            _logger.LogWarning("O id endereço clinica esta errado. ID informado: {IdInformado}, ID do endereço: {IdEnderecoClinica}",id_endereco_clinica,enderecoclinica.Id_endereco_clinica);
+            _logger.LogWarning("O id endereço clinica esta errado. ID informado: {IdInformado}, ID do endereço: {IdEnderecoClinica}", id_endereco_clinica, enderecoclinica.Id_endereco_clinica);
 
             return BadRequest("O id endereço clinica esta errado");
         }
@@ -182,7 +252,7 @@ public class EnderecoClinicasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro ao salvar os dados do endereço clinica.");
+            _logger.LogError(ex, "Erro ao salvar os dados do endereço clinica.");
 
             return BadRequest($"Erro ao salvar os dados: {ex.Message}");
         }
@@ -213,7 +283,7 @@ public class EnderecoClinicasController : ControllerBase
 
             return NoContent();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError("Erro em deletar endereço clinica.");
             return BadRequest($"Erro em deletar: {ex.Message}");
@@ -234,12 +304,12 @@ public class EnderecoClinicasController : ControllerBase
                 Url.Link("GetAllEnderecosClinicas", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("UpdateEnderecoClinica", new { id_endereco_clinica = enderecoClinica.Id_endereco_clinica })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link("DeletaEnderecoClinica", new { id_endereco_clinica = enderecoClinica.Id_endereco_clinica })!,
                 "delete",
@@ -247,5 +317,13 @@ public class EnderecoClinicasController : ControllerBase
         };
 
         return new EnderecoClinicaDTO(enderecoClinica, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? cidade, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllEnderecosClinicas", new { pageNumber, pageSize, cidade, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllEnderecosClinicas", new { pageNumber = pageNumber + 1, pageSize, cidade, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllEnderecosClinicas", new { pageNumber = pageNumber - 1, pageSize, cidade, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

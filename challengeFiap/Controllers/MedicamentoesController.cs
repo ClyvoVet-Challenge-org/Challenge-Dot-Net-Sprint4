@@ -36,13 +36,83 @@ public class MedicamentoesController : ControllerBase
 
         try
         {
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? nome = Request.Query["nome"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "nome";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
             var relatorioMedicamento = await _medicamentoService.GetAllMedicamentoAsync();
-            var medicamentoDtos = relatorioMedicamento
-                .Select(medicamento => CreateMedicamentoDto(medicamento))
+            var query = relatorioMedicamento.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                query = query.Where(m =>
+                    m.Nm_medicamento != null &&
+                    m.Nm_medicamento.Contains(
+                        nome.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(m =>
+                    m.Dosagem_medicamento != null &&
+                    m.Dosagem_medicamento.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(m => m.Id_medicamento)
+                    : query.OrderByDescending(m => m.Id_medicamento),
+
+                "dias" => ascending
+                    ? query.OrderBy(m => m.Qtd_dias)
+                    : query.OrderByDescending(m => m.Qtd_dias),
+
+                _ => ascending
+                    ? query.OrderBy(m => m.Nm_medicamento)
+                    : query.OrderByDescending(m => m.Nm_medicamento)
+            };
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var medicamentoDtos = items.Select(CreateMedicamentoDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<MedicamentoDTO>(
+                medicamentoDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
             _logger.LogInformation("Busca de medicamentos concluída com sucesso");
-            return Ok(medicamentoDtos);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -218,17 +288,17 @@ public class MedicamentoesController : ControllerBase
                 Url.Link("GetMedicamentosById", new { id_medicamento = medicamento.Id_medicamento })!,
                 "self",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("GetAllMedicamentos", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("UpdateMedicamento", new { id_medicamento = medicamento.Id_medicamento })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link("DeletaMedicamento", new { id_medicamento = medicamento.Id_medicamento })!,
                 "delete",
@@ -236,5 +306,13 @@ public class MedicamentoesController : ControllerBase
         };
 
         return new MedicamentoDTO(medicamento, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? nome, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllMedicamentos", new { pageNumber, pageSize, nome, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllMedicamentos", new { pageNumber = pageNumber + 1, pageSize, nome, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllMedicamentos", new { pageNumber = pageNumber - 1, pageSize, nome, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

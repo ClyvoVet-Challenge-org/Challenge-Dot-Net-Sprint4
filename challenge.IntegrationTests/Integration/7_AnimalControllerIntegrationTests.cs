@@ -4,6 +4,7 @@ using challengeFiap.Domain.Dto;
 using System;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -27,14 +28,14 @@ namespace challenge.IntegrationTests.Integration
             var novoAnimal = new
             {
                 Id_animal = id_animal,
-                Rg_animal = "4544545",
-                Nr_microchip_animal = "454544",
-                Nm_animal = "Rex",
+                Rg_animal = "1122345",
+                Nr_microchip_animal = "1111223",
+                Nm_animal = "MEK",
                 Dt_nascimento_animal = DateTime.Now,
                 Peso_animal = 1,
-                Especie_animal = "Cachorro",
-                Raca_animal = "Labrador",
-                Id_tutor = 2
+                Especie_animal = "GATO",
+                Raca_animal = "SIAMES",
+                Id_tutor = 52
             };
 
             // Act
@@ -47,7 +48,7 @@ namespace challenge.IntegrationTests.Integration
                 Assert.Fail($"Não foi criado por: {erro}");
             }
 
-            response.EnsureSuccessStatusCode();
+
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var animalCriado = await response.Content.ReadFromJsonAsync<Animal>();
@@ -60,7 +61,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task UpdateAnimal_DadosValidos_RetornaSucesso()
         {
             // Arrange
-            var id_animal = 26;
+            var id_animal = 94;
 
             var animalAtualizado = new
             {
@@ -72,7 +73,7 @@ namespace challenge.IntegrationTests.Integration
                 Peso_animal = 1,
                 Especie_animal = "Cachorro",
                 Raca_animal = "Labrador",
-                Id_tutor = 2
+                Id_tutor = 52
             };
 
             // Act
@@ -93,11 +94,11 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetAnimal_dados_RetornaOk()
         {
             // Arrange
-            var id_animal = 26;
+            var id_animal = 94;
 
             // Act
-            var response = await _client.GetAsync($"/api/animals/relatorio/animal/{id_animal}");
-
+            var response = await _client.GetAsync($"/api/Animals/relatorio/animal/{id_animal}");
+            
             // Assert
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -126,10 +127,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var animals = await response.Content.ReadFromJsonAsync<List<AnimalDTO>>();
+            var animals = await response.Content.ReadFromJsonAsync<PagedResponse<AnimalDTO>>();
 
             Assert.NotNull(animals);
-            Assert.All(animals, item =>
+            Assert.All(animals.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -137,7 +138,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteAnimal_dados_RetornaOk()
         {
             // Arrange
-            var id_animal = 59;
+            var id_animal = 34;
 
             // Act
             var response = await _client.DeleteAsync($"/api/animals/deleta/animal/{id_animal}");

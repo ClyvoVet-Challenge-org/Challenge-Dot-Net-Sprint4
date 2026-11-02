@@ -1,6 +1,7 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
-using challengeFiap.Domain.Entities;
+using challengeFiap.Domain;
 using challengeFiap.Domain.Dto;
+using challengeFiap.Domain.Entities;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -17,6 +18,7 @@ namespace challenge.IntegrationTests.Integration
         {
             _client = factory.CreateClient();
         }
+
         [Fact]
         public async Task CriarTutor_DadosValidos_RetornaOk()
         {
@@ -26,9 +28,9 @@ namespace challenge.IntegrationTests.Integration
             var novoTutor = new
             {
                 Id_tutor = id_tutor,
-                Cpf_tutor = "455",
-                Nm_tutor = "Leticia",
-                Nr_telefone_tutor = "2122112"
+                Cpf_tutor = "11122345",
+                Nm_tutor = "carol",
+                Nr_telefone_tutor = "11888999"
             };
 
             // Act
@@ -53,14 +55,14 @@ namespace challenge.IntegrationTests.Integration
         public async Task AtualizarTutor_DadosValidos_RetornaSucesso()
         {
             // Arrange
-            var id_tutor = 2;
+            var id_tutor = 1;
 
             var tutorAtualizado = new
             {
                 Id_tutor = id_tutor,
-                Cpf_tutor = "123456789",
-                Nm_tutor = "Leticia",
-                Nr_telefone_tutor = "111111111"
+                Cpf_tutor = "987654321",
+                Nm_tutor = "lUANA",
+                Nr_telefone_tutor = "112345678"
             };
 
             // Act
@@ -81,7 +83,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetTutor_dados_RetornaOk()
         {
             // Arrange
-            var id_tutor = 2;
+            var id_tutor = 3;
 
             // Act
             var response = await _client.GetAsync($"api/tutor/relatorio/Tutor/{id_tutor}");
@@ -114,10 +116,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var tutors = await response.Content.ReadFromJsonAsync<List<TutorDTO>>();
+            var tutors = await response.Content.ReadFromJsonAsync<PagedResponse<TutorDTO>>();
 
             Assert.NotNull(tutors);
-            Assert.All(tutors, item =>
+            Assert.All(tutors.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -125,7 +127,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteTutor_dados_RetornaOk()
         {
             // Arrange
-            var id_tutor = 69;
+            var id_tutor = 95;
 
             // Act
             var response = await _client.DeleteAsync($"api/tutor/deleta/Tutor/{id_tutor}");

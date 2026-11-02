@@ -35,13 +35,79 @@ public class PrescricaosController : ControllerBase
 
         try
         {
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? observacoes = Request.Query["observacoes"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "emissao";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
             var prescricaoRelatorio = await _prescricaoService.GetAllPrescricaoAsync();
-            var prescricaoDtos = prescricaoRelatorio
-                .Select(prescricao => CreatePrescricaoDto(prescricao))
+            var query = prescricaoRelatorio.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(observacoes))
+            {
+                query = query.Where(p =>
+                    p.Observacoes_gerais != null &&
+                    p.Observacoes_gerais.Contains(
+                        observacoes.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search) && int.TryParse(search, out var consultaId))
+            {
+                query = query.Where(p => p.Id_consulta == consultaId);
+            }
+
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(p => p.Id_prescricao)
+                    : query.OrderByDescending(p => p.Id_prescricao),
+
+                "expiracao" => ascending
+                    ? query.OrderBy(p => p.Dt_expiracao)
+                    : query.OrderByDescending(p => p.Dt_expiracao),
+
+                _ => ascending
+                    ? query.OrderBy(p => p.Dt_emissao)
+                    : query.OrderByDescending(p => p.Dt_emissao)
+            };
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var prescricaoDtos = items.Select(CreatePrescricaoDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                observacoes,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<PrescricaoDTO>(
+                prescricaoDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
             _logger.LogInformation("Busca de prescrições concluída com sucesso");
-            return Ok(prescricaoDtos);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -220,17 +286,17 @@ public class PrescricaosController : ControllerBase
                 Url.Link("GetPrescricoesById", new { id_prescricao = prescricao.Id_prescricao })!,
                 "self",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("GetAllPrescricoes", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("UpdatePrescricao", new { id_prescricao = prescricao.Id_prescricao })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link("DeletaPrescricao", new { id_prescricao = prescricao.Id_prescricao })!,
                 "delete",
@@ -238,5 +304,13 @@ public class PrescricaosController : ControllerBase
         };
 
         return new PrescricaoDTO(prescricao, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? observacoes, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllPrescricoes", new { pageNumber, pageSize, observacoes, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllPrescricoes", new { pageNumber = pageNumber + 1, pageSize, observacoes, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllPrescricoes", new { pageNumber = pageNumber - 1, pageSize, observacoes, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

@@ -2,6 +2,7 @@
 using challengeFiap.Application.InterfacesService;
 using challengeFiap.Infrastruture.Interfaces.MongoRepository;
 using challengeFiap.Infrastruture.Interfaces.OracleRepository;
+using challengeFiap.Infrastruture.Repositorie;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

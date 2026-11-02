@@ -1,6 +1,7 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
-using challengeFiap.Domain.Entities;
+using challengeFiap.Domain;
 using challengeFiap.Domain.Dto;
+using challengeFiap.Domain.Entities;
 using System;
 using System.Net;
 using System.Net.Http.Json;
@@ -31,8 +32,8 @@ namespace challenge.IntegrationTests.Integration
                 Historico_consulta = "Foi bom o resultado",
                 St_consulta = challengeFiap.Domain.Enums.StatusConsulta.futura,
                 Dt_consulta = new DateTime(2026, 8, 9),
-                Id_vet = 45,
-                Id_animal = 80
+                Id_vet = 61,
+                Id_animal = 41
             };
 
             // Act
@@ -58,7 +59,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task AtualizarConsulta_DadosValidos_RetornaOk()
         {
             // Arrange
-            var id_consulta = 12;
+            var id_consulta = 38;
 
             var consultaAtualizada = new
             {
@@ -66,8 +67,8 @@ namespace challenge.IntegrationTests.Integration
                 Historico_consulta = "Foi bom o resultado",
                 St_consulta = challengeFiap.Domain.Enums.StatusConsulta.cancelada,
                 Dt_consulta = new DateTime(2026, 10, 12),
-                Id_vet = 45,
-                Id_animal = 80
+                Id_vet = 6,
+                Id_animal = 94
             };
 
             // Act
@@ -89,7 +90,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetConsulta_dados_RetornaOk()
         {
             // Arrange
-            var id_consulta = 61;
+            var id_consulta = 38;
 
             // Act
             var response = await _client.GetAsync($"api/consultas/relatorio/consulta/{id_consulta}");
@@ -122,10 +123,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var consultas = await response.Content.ReadFromJsonAsync<List<ConsultaDTO>>();
+            var consultas = await response.Content.ReadFromJsonAsync<PagedResponse<ConsultaDTO>>();
 
             Assert.NotNull(consultas);
-            Assert.All(consultas, item =>
+            Assert.All(consultas.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -133,7 +134,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteConsulta_dados_RetornaOk()
         {
             // Arrange
-            var id_consulta = 12;
+            var id_consulta = 95;
 
             // Act
             var response = await _client.DeleteAsync($"api/consultas/deleta/consulta/{id_consulta}");

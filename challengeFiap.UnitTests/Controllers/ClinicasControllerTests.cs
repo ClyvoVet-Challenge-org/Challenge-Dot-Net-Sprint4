@@ -35,6 +35,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new ClinicasController(_context, _logger, _ClinicaServiceMock.Object);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper
                 .Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
@@ -116,7 +120,8 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<ClinicaDTO>>(okResult.Value);
+            var returnedPage = Assert.IsType<PagedResponse<ClinicaDTO>>(okResult.Value);
+            var returnedList = returnedPage.Items.ToList();
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);

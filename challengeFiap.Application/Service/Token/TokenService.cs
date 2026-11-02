@@ -24,9 +24,9 @@ namespace challengeFiap.Application.Service.Token
             var isseur = _configuration["Jwt:Issuer"];
             var audience = _configuration["Jwt:Audience"];
 
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!));
 
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
 
             var claims = new[]

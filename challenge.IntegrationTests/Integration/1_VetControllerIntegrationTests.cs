@@ -3,6 +3,7 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -28,10 +29,10 @@ namespace challenge.IntegrationTests.Integration
             {
                 Id_vet = id_vet,
                 Nm_vet = "le",
-                Cpf_vet = "12121",
-                Crmv_vet = "4545-SP",
-                Email_vet = "2149991@gmail.com",
-                Senha_vet = "1221"
+                Cpf_vet = "12121212121",
+                Crmv_vet = "22121-SP",
+                Email_vet = "212112@gmail.com",
+                Senha_vet = "11111"
             };
 
             // Act
@@ -56,16 +57,16 @@ namespace challenge.IntegrationTests.Integration
         public async Task UpdateVeterinario_DadosValidos_RetornaSucesso()
         {
             // Arrange
-            var id_veterinario = 2;
+            var id_veterinario = 6;
 
             var veterinarioAtualizado = new
             {
                 Id_vet = id_veterinario,
                 Nm_vet = "nome",
-                Cpf_vet = "123123123",
-                Crmv_vet = "1234556",
-                Email_vet = "safdf@gmail.com",
-                Senha_vet = "21358"
+                Cpf_vet = "232222",
+                Crmv_vet = "2222222",
+                Email_vet = "safdf2@gmail.com",
+                Senha_vet = "22222"
             };
 
             // Act
@@ -88,17 +89,17 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetVet_dados_RetornaOk()
         {
             // Arrange
-            var id_veterinario = 2;
+            var id_veterinario = 6;
 
             // Act
             var response = await _client.GetAsync($"api/veterinarios/relatorio/veterinario/{id_veterinario}");
 
             // Assert
-            if (!response.IsSuccessStatusCode)
+            if (response.StatusCode== HttpStatusCode.NotFound)
             {
-                var erro = await response.Content.ReadAsStringAsync();
-                Assert.Fail($"Não foi encontrado por: {erro}");
+                Assert.Fail($"Veterinário não encontrado");
             }
+            response.EnsureSuccessStatusCode();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -112,24 +113,19 @@ namespace challenge.IntegrationTests.Integration
         [Fact]
         public async Task GetAll_dados_RetornarOk()
         {
-            //Arrage
 
             //Act
             var response = await _client.GetAsync("api/veterinarios/relatorio/veterinario");
 
             //Assert
-            if (!response.IsSuccessStatusCode)
-            {
-                var erro = await response.Content.ReadAsStringAsync();
-                Assert.Fail($"Não foi obtido por: {erro}");
-            }
+            response.EnsureSuccessStatusCode();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var vet = await response.Content.ReadFromJsonAsync<List<VeterinarioDTO>>();
+            var vet = await response.Content.ReadFromJsonAsync<PagedResponse<VeterinarioDTO>>();
 
             Assert.NotNull(vet);
-            Assert.All(vet, item =>
+            Assert.All(vet.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -137,7 +133,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteVet_dados_RetornaOk()
         {
             // Arrange
-            var id_veterinario = 43;
+            var id_veterinario = 55;
 
             // Act
             var response = await _client.DeleteAsync($"api/veterinarios/deleta/veterinario/{id_veterinario}");

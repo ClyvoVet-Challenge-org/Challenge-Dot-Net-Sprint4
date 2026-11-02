@@ -3,6 +3,7 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -35,7 +36,7 @@ namespace challenge.IntegrationTests.Integration
                 Nr_rua = "11221",
                 Complemento = "454",
                 Cep = "454554",
-                Id_clinica = 3
+                Id_clinica = 6
             };
 
             // Act
@@ -60,7 +61,7 @@ namespace challenge.IntegrationTests.Integration
         {
             // Arrange
 
-            var id_endereco_clinica = 87;
+            var id_endereco_clinica = 1;
 
             var EnderecoClinicaAtualizado = new
             {
@@ -73,7 +74,7 @@ namespace challenge.IntegrationTests.Integration
                 Nr_rua = "1263",
                 Complemento = "1212",
                 Cep = "123456",
-                Id_clinica = 43
+                Id_clinica = 7
             };
             // Act
             var response = await _client.PutAsJsonAsync($"api/enderecoclinicas/atualizar/enderecoclinica/{id_endereco_clinica}",EnderecoClinicaAtualizado);
@@ -94,7 +95,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetEnderecoClinica_dados_RetornaOk()
         {
             // Arrange
-            var id_endereco_clinica = 21;
+            var id_endereco_clinica = 1;
 
             // Act
             var response = await _client.GetAsync($"api/enderecoclinicas/relatorio/enderecoclinica/{id_endereco_clinica}");
@@ -127,10 +128,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var enderecos = await response.Content.ReadFromJsonAsync<List<EnderecoClinicaDTO>>();
+            var enderecos = await response.Content.ReadFromJsonAsync<PagedResponse<EnderecoClinicaDTO>>();
 
             Assert.NotNull(enderecos);
-            Assert.All(enderecos, item =>
+            Assert.All(enderecos.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -138,7 +139,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteEnderecoClinica_dados_RetornaOk()
         {
             // Arrange
-            var id_endereco_clinica = 99;
+            var id_endereco_clinica = 61;
 
             // Act
             var response = await _client.DeleteAsync($"api/enderecoclinicas/deleta/enderecoclinica/{id_endereco_clinica}");

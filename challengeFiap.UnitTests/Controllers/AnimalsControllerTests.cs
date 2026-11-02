@@ -1,4 +1,5 @@
-﻿using challengeFiap.Domain.Entities;
+﻿using challengeFiap.Domain;
+using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using challengeFiap.Application.InterfacesService;
 using challengeFiap.Infrastruture.Data;
@@ -32,6 +33,10 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new AnimalsController(_context, _logger, _animalServiceMock.Object);
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
                 .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
@@ -145,7 +150,10 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<AnimalDTO>>(okResult.Value);
+
+            var returnedPage = Assert.IsType<PagedResponse<AnimalDTO>>(okResult.Value);
+
+            var returnedList = returnedPage.Items.ToList();
 
             Assert.NotNull(returnedList);
             Assert.All(returnedList, item => Assert.Equal(4, item.Dto.Count));

@@ -1,12 +1,12 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
-using challengeFiap.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -29,8 +29,8 @@ namespace challenge.IntegrationTests.Integration
             var novoDadosDeVetClinica = new
             {
                 id_clinica_vet = id_vetClinica,
-                Id_vet = 45,
-                Id_clinica = 6
+                Id_vet = 61,
+                Id_clinica = 5
             };
 
             //Act
@@ -56,13 +56,13 @@ namespace challenge.IntegrationTests.Integration
         {
             // Arrange
 
-            var id_vetClinica = 5;
+            var id_vetClinica = 84;
 
             var novoDadosDeVetClinica = new
             {
                 id_clinica_vet = id_vetClinica,
-                Id_vet = 74,
-                Id_clinica = 6
+                Id_vet = 6,
+                Id_clinica = 7
             };
 
             // Act
@@ -83,7 +83,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetVetClinica_dados_RetornaOk()
         {
             // Arrange
-            var id_vetClinica = 5;
+            var id_vetClinica = 84;
 
             // Act
             var response = await _client.GetAsync($"api/vetclinicas/relatorio/vetclinica/{id_vetClinica}");
@@ -116,10 +116,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var vetClinicas = await response.Content.ReadFromJsonAsync<List<VetClinicaDTO>>();
+            var vetClinicas = await response.Content.ReadFromJsonAsync<PagedResponse<VetClinicaDTO>>();
 
             Assert.NotNull(vetClinicas);
-            Assert.All(vetClinicas, item =>
+            Assert.All(vetClinicas.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -127,7 +127,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteVetClinica_dados_RetornaOk()
         {
             // Arrange
-            var id_vetClinica = 82;
+            var id_vetClinica = 91;
 
             // Act
             var response = await _client.DeleteAsync($"api/vetclinicas/deleta/vetclinica/{id_vetClinica}");

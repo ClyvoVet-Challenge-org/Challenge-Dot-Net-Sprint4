@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens.Experimental;
 using Microsoft.OpenApi;
 using MongoDB.Driver;
+using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using System.Reflection.Metadata;
@@ -105,14 +106,67 @@ try
     builder.Services.AddAuthorization();
 
     //Parte de Swagger
-
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddOpenApi();
-
     var jwtKey = builder.Configuration["Jwt:Key"];
     var jwtIssuer = builder.Configuration["Jwt:Issuer"];
     var jwtAudience = builder.Configuration["Jwt:Audience"];
 
+
+    builder.Services.AddSingleton<TokenService>();
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey!)),
+
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+
+    builder.Services.AddEndpointsApiExplorer();
+
+    builder.Services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            document.Components ??= new OpenApiComponents();
+
+            document.Components.SecuritySchemes ??=
+                new Dictionary<string, IOpenApiSecurityScheme>();
+
+            document.Components.SecuritySchemes.Add("Bearer",
+                new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Insira o token JWT gerado pela rota de login."
+                });
+
+            document.Security ??= [];
+
+            document.Security.Add(
+                new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer")] = []
+                });
+
+            return Task.CompletedTask;
+        });
+    });
+
+    
     builder.Services.AddSwaggerGen(options =>
     {
         var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -136,27 +190,6 @@ try
         });
     });
 
-    builder.Services.AddSingleton<TokenService>();
-
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)),
-
-            ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
-
-            ValidateAudience = true,
-            ValidAudience = jwtAudience,
-
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
 
     builder.Services.AddAuthorization();
 
@@ -174,6 +207,8 @@ try
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "Challenge CYLVO");
             options.RoutePrefix = "swagger";
         });
+        app.MapOpenApi();
+        app.MapScalarApiReference();
     }
 
 

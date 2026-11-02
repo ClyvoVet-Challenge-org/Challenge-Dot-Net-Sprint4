@@ -4,6 +4,7 @@ using challengeFiap.Domain.Dto;
 using System;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -30,7 +31,7 @@ namespace challenge.IntegrationTests.Integration
                 Id_prescricao = id_prescricao,
                 Dt_emissao = new DateTime(2026, 9, 2),
                 Dt_expiracao = new DateTime(2026, 9, 18),
-                Id_consulta = 61,
+                Id_consulta = 51,
                 Observacoes_gerais = "bom"
             };
 
@@ -53,14 +54,14 @@ namespace challenge.IntegrationTests.Integration
         public async Task AtualizarPrescricao_DadosValidos_RetornaOk()
         {
             // Arrange
-            var id_prescricao =17;
+            var id_prescricao =99;
 
             var prescricaoAtualizada = new
             {
                 Id_prescricao = id_prescricao,
                 Dt_emissao = new DateTime(2026, 9, 9),
-                Dt_expiracao = new DateTime(2026, 9, 15),
-                Id_consulta = 61,
+                Dt_expiracao = new DateTime(2026, 9, 20),
+                Id_consulta = 51,
                 Observacoes_gerais = "Paciente esta mal"
             };
 
@@ -83,7 +84,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetPrescricao_dados_RetornaOk()
         {
             // Arrange
-            var id_prescricao = 17;
+            var id_prescricao = 40;
 
             // Act
             var response = await _client.GetAsync($"api/prescricaos/relatorio/prescricao/{id_prescricao}");
@@ -116,10 +117,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK,response.StatusCode);
 
-            var prescricoes = await response.Content.ReadFromJsonAsync<List<PrescricaoDTO>>();
+            var prescricoes = await response.Content.ReadFromJsonAsync<PagedResponse<PrescricaoDTO>>();
 
             Assert.NotNull(prescricoes);
-            Assert.All(prescricoes, item =>
+            Assert.All(prescricoes.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -127,7 +128,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeletePrescricao_dados_RetornaOk()
         {
             // Arrange
-            var id_prescricao = 17;
+            var id_prescricao = 99;
 
             // Act
             var response = await _client.DeleteAsync($"api/prescricaos/deleta/prescricao/{id_prescricao}");

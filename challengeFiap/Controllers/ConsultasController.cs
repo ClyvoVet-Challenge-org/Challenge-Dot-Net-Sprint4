@@ -39,14 +39,79 @@ public class ConsultasController : ControllerBase
 
         try
         {
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? status = Request.Query["status"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "data";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
             var relatorioConsulta = await _consultaService.GetAllConsultaAsync();
-            var consultaDtos = relatorioConsulta
-                .Select(consulta => CreateConsultaDto(consulta))
+            var query = relatorioConsulta.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<challengeFiap.Domain.Enums.StatusConsulta>(status, true, out var statusConsulta))
+            {
+                query = query.Where(c => c.St_consulta == statusConsulta);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c =>
+                    c.Historico_consulta != null &&
+                    c.Historico_consulta.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(c => c.Id_consulta)
+                    : query.OrderByDescending(c => c.Id_consulta),
+
+                "status" => ascending
+                    ? query.OrderBy(c => c.St_consulta)
+                    : query.OrderByDescending(c => c.St_consulta),
+
+                _ => ascending
+                    ? query.OrderBy(c => c.Dt_consulta)
+                    : query.OrderByDescending(c => c.Dt_consulta)
+            };
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
-            _logger.LogInformation("Busca de consultas concluída com sucesso");
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
 
-            return Ok(consultaDtos);
+            var consultaDtos = items.Select(CreateConsultaDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                status,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<ConsultaDTO>(
+                consultaDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
+            _logger.LogInformation("Busca de consultas concluída com sucesso");
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -69,7 +134,7 @@ public class ConsultasController : ControllerBase
     [Route("relatorio/consulta/{id_consulta:int}", Name = "GetConsultasById")]
     public async Task<ActionResult<ConsultaDTO>> GetConsulta(int id_consulta)
     {
-        _logger.LogInformation("Iniciando a busca de consulta com ID: {IdConsulta}",id_consulta);
+        _logger.LogInformation("Iniciando a busca de consulta com ID: {IdConsulta}", id_consulta);
 
         try
         {
@@ -88,7 +153,7 @@ public class ConsultasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em buscar consulta");
+            _logger.LogError(ex, "Erro em buscar consulta");
 
             return BadRequest($"Erro em buscar: {ex.Message}");
         }
@@ -120,7 +185,7 @@ public class ConsultasController : ControllerBase
 
         try
         {
-            var consultaAtualizada =await _consultaService.UpdateConsultaAsync(id_consulta,consulta);
+            var consultaAtualizada = await _consultaService.UpdateConsultaAsync(id_consulta, consulta);
 
             _logger.LogInformation("Consulta atualizada com sucesso");
 
@@ -138,7 +203,7 @@ public class ConsultasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em atualizar consulta");
+            _logger.LogError(ex, "Erro em atualizar consulta");
             return BadRequest($"Erro em atualizar: {ex.Message}");
         }
     }
@@ -183,7 +248,7 @@ public class ConsultasController : ControllerBase
                 return BadRequest("Ids não encontrado");
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao salvar os dados da consulta.");
             return BadRequest($"Erro ao salvar os dados: {ex.Message}");
@@ -230,19 +295,19 @@ public class ConsultasController : ControllerBase
                 "GetConsultasById", new { id_consulta = consulta.Id_consulta })!,
                 "self",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link(
                 "GetAllConsultas", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link(
                 "UpdateConsulta", new { id_consulta = consulta.Id_consulta })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link(
                 "DeletaConsulta", new { id_consulta = consulta.Id_consulta })!,
@@ -252,5 +317,13 @@ public class ConsultasController : ControllerBase
         };
 
         return new ConsultaDTO(consulta, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? status, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllConsultas", new { pageNumber, pageSize, status, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllConsultas", new { pageNumber = pageNumber + 1, pageSize, status, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllConsultas", new { pageNumber = pageNumber - 1, pageSize, status, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

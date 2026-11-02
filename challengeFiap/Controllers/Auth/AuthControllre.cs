@@ -20,8 +20,12 @@ namespace challengeFiap.Controllers.Auth
         [AllowAnonymous]
         public IActionResult Login([FromBody] UserLoginAux user)
         {
-            var token = _tokenService.GenerateToken(user.Username);
-            return Ok(new { token });
+            if (user.Username == "admin" && user.Password == "admin")
+            {
+                var token = _tokenService.GenerateToken(user.Username);
+                return Ok(new { token });
+            }
+            return Unauthorized("Usuário ou senha inválidos");
         }
 
 
@@ -32,10 +36,11 @@ namespace challengeFiap.Controllers.Auth
             var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return Ok($"Usuario: {username}, está autenticado");
         }
+
         public class UserLoginAux()
         {
-            public string Username { get; set; }
-            public string Password { get; set; }
+            public string? Username { get; set; }
+            public string? Password { get; set; }
         }
     }
 }

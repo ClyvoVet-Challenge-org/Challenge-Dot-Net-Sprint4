@@ -140,7 +140,7 @@ public class CarteiraVacinalsController : ControllerBase
                 _logger.LogInformation("Carteira Vacinal foi encontrada com sucesso");
                 var carteiraVacinal = CreateCarteiraVacinalDto(carteiravacinal);
 
-                return Ok(carteiravacinal);
+                return Ok(carteiraVacinal);
             }
             catch (Exception ex)
             {

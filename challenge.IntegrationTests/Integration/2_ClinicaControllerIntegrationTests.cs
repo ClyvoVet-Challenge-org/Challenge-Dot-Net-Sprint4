@@ -1,4 +1,5 @@
 ﻿using challenge.IntegrationTests.FactoryFixture;
+using challengeFiap.Domain;
 using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using System.Net;
@@ -30,8 +31,8 @@ namespace challenge.IntegrationTests.Integration
             var novaClinica = new
             {
                 Id_clinica = id_clinica,
-                Cnpj_clinica = "1233",
-                Nm_clinica = "VeterinarioVet"
+                Cnpj_clinica = "8080",
+                Nm_clinica = "VeterinarioVet1545"
             };
 
             // Act
@@ -59,7 +60,7 @@ namespace challenge.IntegrationTests.Integration
             var clinicaAtualizada = new
             {
                 Id_clinica = id_clinica,
-                Cnpj_clinica = "122442",
+                Cnpj_clinica = "99999",
                 Nm_clinica = "PetSoule"
             };
 
@@ -115,10 +116,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var clinicas = await response.Content.ReadFromJsonAsync<List<ClinicaDTO>>();
+            var resposta = await response.Content.ReadFromJsonAsync<PagedResponse<ClinicaDTO>>();
 
-            Assert.NotNull(clinicas);
-            Assert.All(clinicas, clinica =>
+            Assert.NotNull(resposta);
+            Assert.All(resposta.Items, clinica =>
                 Assert.Contains(clinica.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -126,7 +127,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteClinica_dados_RetornaOk()
         {
             // Arrange
-            var id_clinica = 32;
+            var id_clinica = 98;
 
             // Act
             var response = await _client.DeleteAsync($"api/clinicas/deleta/clinica/{id_clinica}");

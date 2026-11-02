@@ -1,4 +1,5 @@
-﻿using challengeFiap.Domain.Entities;
+﻿using challengeFiap.Domain;
+using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using challengeFiap.Application.InterfacesService;
 using challengeFiap.Infrastruture.Data;
@@ -34,6 +35,12 @@ namespace challengeFiap.UnitTests.Controllers
             _context = new AppDbContext(options);
 
             _controller = new CarteiraVacinalsController(_context, _logger, _CarteiraVacinalServiceMock.Object);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(helper => helper.Link(It.IsAny<string?>(), It.IsAny<object?>()))
                 .Returns((string? routeName, object? _) => $"https://localhost/{routeName}");
@@ -142,7 +149,10 @@ namespace challengeFiap.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado.Result);
-            var returnedList = Assert.IsType<List<CarteiraVacinalDTO>>(okResult.Value);
+
+            var returnedPage = Assert.IsType<PagedResponse<CarteiraVacinalDTO>>(okResult.Value);
+
+            var returnedList = returnedPage.Items.ToList();
 
             Assert.NotNull(returnedList);
             Assert.Single(returnedList);

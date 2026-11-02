@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -32,9 +33,9 @@ namespace challenge.IntegrationTests.Integration
                 Id_carteiraVacinal = id_carteiraVacinal,
                 Nm_vacina = "raiva",
                 Dt_vacina_prevista = new DateTime(2027, 9, 9),
-                Dt_vacina_efetuada = new DateTime(2026, 9, 20),
+                Dt_vacina_efetuada = new DateTime(2028, 9, 20),
                 St_vacina = StatusVacinacao.PENDENTE,
-                Id_animal = 80
+                Id_animal = 77
             };
 
             //Act
@@ -61,16 +62,16 @@ namespace challenge.IntegrationTests.Integration
         public async Task AtualizarCarteiraVacinal_DadosValidos_RetornaOk()
         {
             // Arrange
-            var id_carteiraVacinal = 34;
+            var id_carteiraVacinal = 5;
 
             var carteiraVacinalAtualizada = new
             {
                 Id_carteiraVacinal = id_carteiraVacinal,
                 Nm_vacina = "semanal",
                 Dt_vacina_prevista = new DateTime(2027, 9, 9),
-                Dt_vacina_efetuada = new DateTime(2026, 9, 9),
+                Dt_vacina_efetuada = new DateTime(2028, 9, 9),
                 St_vacina = StatusVacinacao.EFETUADA,
-                Id_animal = 80
+                Id_animal = 42
             };
 
             // Act
@@ -92,7 +93,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetCarteiraVacinal_dados_RetornaOk()
         {
             // Arrange
-            var id_carteiraVacinal = 34;
+            var id_carteiraVacinal = 80;
 
             // Act
             var response = await _client.GetAsync($"api/carteiravacinals/relatorio/carteiravacinal/{id_carteiraVacinal}");
@@ -125,10 +126,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var lista = await response.Content.ReadFromJsonAsync<List<CarteiraVacinalDTO>>();
+            var lista = await response.Content.ReadFromJsonAsync<PagedResponse<CarteiraVacinalDTO>>();
 
             Assert.NotNull(lista);
-            Assert.All(lista, item =>
+            Assert.All(lista.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -136,7 +137,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteCarteiraVacinal_dados_RetornaOk()
         {
             // Arrange
-            var id_carteiraVacinal = 38;
+            var id_carteiraVacinal = 5;
 
             // Act
             var response = await _client.DeleteAsync($"api/carteiravacinals/deleta/carteiravacinal/{id_carteiraVacinal}");

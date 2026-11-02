@@ -35,13 +35,83 @@ public class EnderecoTutorsController : ControllerBase
 
         try
         {
-            var relatorioEnResponsavel = await _enderecoTutorService.GetAllEnderecoTutorAsync();
-            var enderecoTutorDtos = relatorioEnResponsavel
-                .Select(endereco => CreateEnderecoTutorDto(endereco))
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? cidade = Request.Query["cidade"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "cidade";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+            
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
+            var relatorioEnderecoTutor = await _enderecoTutorService.GetAllEnderecoTutorAsync();
+            var query = relatorioEnderecoTutor.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(cidade))
+            {
+                query = query.Where(e =>
+                    e.Cidade != null &&
+                    e.Cidade.Contains(
+                        cidade.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(e =>
+                    e.Estado != null &&
+                    e.Estado.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(e => e.Id_endereco_tutor)
+                    : query.OrderByDescending(e => e.Id_endereco_tutor),
+
+                "estado" => ascending
+                    ? query.OrderBy(e => e.Estado)
+                    : query.OrderByDescending(e => e.Estado),
+
+                _ => ascending
+                    ? query.OrderBy(e => e.Cidade)
+                    : query.OrderByDescending(e => e.Cidade)
+            };
+
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var enderecoTutorDtos = items.Select(CreateEnderecoTutorDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                cidade,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<EnderecoTutorDTO>(
+                enderecoTutorDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
             _logger.LogInformation("Busca de endereço responsavel concluída com sucesso");
-            return Ok(enderecoTutorDtos);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -116,7 +186,7 @@ public class EnderecoTutorsController : ControllerBase
             var enderecoTutorAtualizado = await _enderecoTutorService.UpdateEnderecoTutorAsync(id_endereco_responsavel, enderecoresponsavel);
 
             _logger.LogInformation("Endereço responsavel atualizado com sucesso");
-            
+
             return Ok(enderecoTutorAtualizado);
         }
         catch (DbUpdateConcurrencyException)
@@ -220,17 +290,17 @@ public class EnderecoTutorsController : ControllerBase
                 Url.Link("GetEnderecosResponsaveisById", new { id_endereco_responsavel = enderecoTutor.Id_endereco_tutor })!,
                 "self",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("GetAllEnderecosResponsaveis", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("UpdateEnderecoResponsavel", new { id_endereco_responsavel = enderecoTutor.Id_endereco_tutor })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link("DeletaEnderecoResponsavel", new { id_endereco_responsavel = enderecoTutor.Id_endereco_tutor })!,
                 "delete",
@@ -238,5 +308,13 @@ public class EnderecoTutorsController : ControllerBase
         };
 
         return new EnderecoTutorDTO(enderecoTutor, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? cidade, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllEnderecosResponsaveis", new { pageNumber, pageSize, cidade, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllEnderecosResponsaveis", new { pageNumber = pageNumber + 1, pageSize, cidade, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllEnderecosResponsaveis", new { pageNumber = pageNumber - 1, pageSize, cidade, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

@@ -35,13 +35,75 @@ public class VetClinicasController : ControllerBase
 
         try
         {
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? veterinario = Request.Query["veterinario"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "id";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
             var clinicaVet = await _vetClinica.GetAllVetClinicaAsync();
-            var vetClinicaDtos = clinicaVet
-                .Select(vetClinica => CreateVetClinicaDto(vetClinica))
+            var query = clinicaVet.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(veterinario) && int.TryParse(veterinario, out var idVeterinario))
+            {
+                query = query.Where(v => v.Id_vet == idVeterinario);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search) && int.TryParse(search, out var idClinica))
+            {
+                query = query.Where(v => v.Id_clinica == idClinica);
+            }
+
+            query = sortBy.ToLower() switch
+            {
+                "veterinario" => ascending
+                    ? query.OrderBy(v => v.Id_vet)
+                    : query.OrderByDescending(v => v.Id_vet),
+
+                "clinica" => ascending
+                    ? query.OrderBy(v => v.Id_clinica)
+                    : query.OrderByDescending(v => v.Id_clinica),
+
+                _ => ascending
+                    ? query.OrderBy(v => v.Id_clinica_vet)
+                    : query.OrderByDescending(v => v.Id_clinica_vet)
+            };
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var vetClinicaDtos = items.Select(CreateVetClinicaDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                veterinario,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<VetClinicaDTO>(
+                vetClinicaDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
             _logger.LogInformation("Busca de ClinicaVet concluída com sucesso");
-            return Ok(vetClinicaDtos);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -230,17 +292,17 @@ public class VetClinicasController : ControllerBase
                 Url.Link("GetVetClinicasById", new { id_clinica_vet = vetClinica.Id_clinica_vet })!,
                 "self",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("GetAllVetClinicas", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("UpdateVetClinica", new { id_clinica_vet = vetClinica.Id_clinica_vet })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link("DeletaVetClinica", new { id_clinica_vet = vetClinica.Id_clinica_vet })!,
                 "delete",
@@ -248,5 +310,13 @@ public class VetClinicasController : ControllerBase
         };
 
         return new VetClinicaDTO(vetClinica, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? veterinario, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllVetClinicas", new { pageNumber, pageSize, veterinario, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllVetClinicas", new { pageNumber = pageNumber + 1, pageSize, veterinario, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllVetClinicas", new { pageNumber = pageNumber - 1, pageSize, veterinario, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

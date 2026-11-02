@@ -39,14 +39,84 @@ public class ClinicasController : ControllerBase
 
         try
         {
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? nome = Request.Query["nome"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "nome";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
             var relatorioClinica = await _clinicaService.GetAllClinicaAsync();
-            var clinicaDtos = relatorioClinica
-                .Select(clinica => CreateClinicaDto(clinica))
+            var query = relatorioClinica.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                query = query.Where(c =>
+                    c.Nm_clinica != null &&
+                    c.Nm_clinica.Contains(
+                        nome.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c =>
+                    c.Cnpj_clinica != null &&
+                    c.Cnpj_clinica.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(c => c.Id_clinica)
+                    : query.OrderByDescending(c => c.Id_clinica),
+
+                "cnpj" => ascending
+                    ? query.OrderBy(c => c.Cnpj_clinica)
+                    : query.OrderByDescending(c => c.Cnpj_clinica),
+
+                _ => ascending
+                    ? query.OrderBy(c => c.Nm_clinica)
+                    : query.OrderByDescending(c => c.Nm_clinica)
+            };
+
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
-            _logger.LogInformation("Busca de clinicas concluída com sucesso");
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            
+            var clinicaDtos = items.Select(CreateClinicaDto)
+                .ToList();
+            
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
 
-            return Ok(clinicaDtos);
+            var response = new PagedResponse<ClinicaDTO>(
+                clinicaDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
+            _logger.LogInformation("Busca de clinicas concluída com sucesso");
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -90,7 +160,7 @@ public class ClinicasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro no processamento da buscar");
+            _logger.LogError(ex, "Erro no processamento da buscar");
             return BadRequest($"Erro em buscar pelo id: {ex.Message}");
         }
     }
@@ -110,7 +180,7 @@ public class ClinicasController : ControllerBase
     [Route("atualizar/clinica/{id_clinica:int}", Name = "UpdateClinica")]
     public async Task<IActionResult> PutClinica(int id_clinica, Clinica clinica)
     {
-        _logger.LogInformation("Iniciando atualizacao de clinica com ID: {IdClinica}",id_clinica);
+        _logger.LogInformation("Iniciando atualizacao de clinica com ID: {IdClinica}", id_clinica);
 
         if (id_clinica != clinica.Id_clinica)
         {
@@ -130,7 +200,7 @@ public class ClinicasController : ControllerBase
         {
             if (!ClinicaExists(id_clinica))
             {
-                _logger.LogWarning("Id {IdClinica} não foi encontrado",id_clinica);
+                _logger.LogWarning("Id {IdClinica} não foi encontrado", id_clinica);
 
                 return NotFound("A clinica não encontrada");
             }
@@ -141,7 +211,7 @@ public class ClinicasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em atualizar clinica.");
+            _logger.LogError(ex, "Erro em atualizar clinica.");
 
             return BadRequest($"Erro em atualizar clinica: {ex.Message}");
         }
@@ -180,13 +250,13 @@ public class ClinicasController : ControllerBase
 
             var clinicaCriada = await _clinicaService.CreateadAsync(clinica);
 
-            _logger.LogInformation("Clinica {IdClinica}, criada com sucesso",clinica.Id_clinica);
+            _logger.LogInformation("Clinica {IdClinica}, criada com sucesso", clinica.Id_clinica);
 
             return Ok(clinicaCriada);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em salvar os dados");
+            _logger.LogError(ex, "Erro em salvar os dados");
 
             return BadRequest($"Erro em salvar os dados: {ex.Message}");
         }
@@ -206,7 +276,7 @@ public class ClinicasController : ControllerBase
     [Route("deleta/clinica/{id_clinica:int}", Name = "DeletaClinica")]
     public async Task<IActionResult> DeleteClinica(int id_clinica)
     {
-        _logger.LogInformation("Iniciando remoção de clinica. ID: {IdClinica}",id_clinica);
+        _logger.LogInformation("Iniciando remoção de clinica. ID: {IdClinica}", id_clinica);
 
         try
         {
@@ -218,7 +288,7 @@ public class ClinicasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em deletar clinica.");
+            _logger.LogError(ex, "Erro em deletar clinica.");
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
     }
@@ -249,5 +319,18 @@ public class ClinicasController : ControllerBase
         };
 
         return new ClinicaDTO(clinica, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? nome, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(Url.Link("GetAllClinicas", new { pageNumber, pageSize, nome, search, sortBy, ascending })!, "self", "GET")
+        };
+        if (pageNumber < totalPages)
+            links.Add(new LinkDTO(Url.Link("GetAllClinicas", new { pageNumber = pageNumber + 1, pageSize, nome, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1)
+            links.Add(new LinkDTO(Url.Link("GetAllClinicas", new { pageNumber = pageNumber - 1, pageSize, nome, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

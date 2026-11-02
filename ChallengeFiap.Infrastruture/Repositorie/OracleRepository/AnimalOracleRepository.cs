@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.OpenApi;
 
 namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
 {
@@ -18,10 +19,10 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
         }
         public async Task<Animal> CreateAnimalAsync(Animal animal)
         {
-            await _context.Animals.AddAsync(animal);
-            await _context.SaveChangesAsync();
-            return animal;
-        }
+                await _context.Animals.AddAsync(animal);
+                await _context.SaveChangesAsync();
+                return animal;
+            }
 
         public async Task<Animal> DeleteAnimalAsync(int id_animal)
         {
@@ -52,24 +53,24 @@ namespace ChallengeFiap.Infrastruture.Repositorie.OracleRepository
 
         public async Task<Animal> UpdateAnimalAsync(int id_animal, Animal animal)
         {
-            var existeAnimal = await _context.Animals.FindAsync(id_animal);
-            if (existeAnimal == null)
-            {
-                throw new KeyNotFoundException($"Animal com id {id_animal} não encontrado.");
+                var existeAnimal = await _context.Animals.FindAsync(id_animal);
+                if (existeAnimal == null)
+                {
+                    throw new KeyNotFoundException($"Animal com id {id_animal} não encontrado.");
+                }
+
+                existeAnimal.Rg_animal = animal.Rg_animal;
+                existeAnimal.Nr_microchip_animal = animal.Nr_microchip_animal;
+                existeAnimal.Nm_animal = animal.Nm_animal;
+                existeAnimal.Dt_nascimento_animal = animal.Dt_nascimento_animal;
+                existeAnimal.Peso_animal = animal.Peso_animal;
+                existeAnimal.Especie_animal = animal.Especie_animal;
+                existeAnimal.Raca_animal = animal.Raca_animal;
+                existeAnimal.Id_tutor = animal.Id_tutor;
+
+                await _context.SaveChangesAsync();
+
+                return existeAnimal;
             }
-
-            existeAnimal.Rg_animal = animal.Rg_animal;
-            existeAnimal.Nr_microchip_animal = animal.Nr_microchip_animal;
-            existeAnimal.Nm_animal = animal.Nm_animal;
-            existeAnimal.Dt_nascimento_animal = animal.Dt_nascimento_animal;
-            existeAnimal.Peso_animal = animal.Peso_animal;
-            existeAnimal.Especie_animal = animal.Especie_animal;
-            existeAnimal.Raca_animal = animal.Raca_animal;
-            existeAnimal.Id_tutor = animal.Id_tutor;
-
-            await _context.SaveChangesAsync();
-
-            return existeAnimal;
-        }
     }
 }

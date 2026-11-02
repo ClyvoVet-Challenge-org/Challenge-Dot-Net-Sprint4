@@ -35,13 +35,82 @@ public class TutorController : ControllerBase
 
         try
         {
-            var TutorRelatorio = await _tutorService.GetAllTutorAsync();
-            var tutorDtos = TutorRelatorio
-                .Select(tutor => CreateTutorDto(tutor))
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? nome = Request.Query["nome"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "nome";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
+            var relatorioTutor = await _tutorService.GetAllTutorAsync();
+            var query = relatorioTutor.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                query = query.Where(t =>
+                    t.Nm_tutor != null &&
+                    t.Nm_tutor.Contains(
+                        nome.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(t =>
+                    t.Cpf_tutor != null &&
+                    t.Cpf_tutor.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(t => t.Id_tutor)
+                    : query.OrderByDescending(t => t.Id_tutor),
+
+                "cpf" => ascending
+                    ? query.OrderBy(t => t.Cpf_tutor)
+                    : query.OrderByDescending(t => t.Cpf_tutor),
+
+                _ => ascending
+                    ? query.OrderBy(t => t.Nm_tutor)
+                    : query.OrderByDescending(t => t.Nm_tutor)
+            };
+
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            var tutorDtos = items.Select(CreateTutorDto)
+                .ToList();
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<TutorDTO>(
+                tutorDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
             _logger.LogInformation("Busca de tutores concluída com sucesso");
-            return Ok(tutorDtos);
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -228,17 +297,17 @@ public class TutorController : ControllerBase
                 Url.Link("GetTutoresById", new { id_Tutor = tutor.Id_tutor })!,
                 "self",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("GetAllTutores", null)!,
                 "collection",
                 "GET"),
-            
+
             new LinkDTO(
                 Url.Link("UpdateTutor", new { id_Tutor = tutor.Id_tutor })!,
                 "update",
                 "PUT"),
-            
+
             new LinkDTO(
                 Url.Link("DeletaTutor", new { id_Tutor = tutor.Id_tutor })!,
                 "delete",
@@ -246,5 +315,18 @@ public class TutorController : ControllerBase
         };
 
         return new TutorDTO(tutor, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? nome, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(Url.Link("GetAllTutores", new { pageNumber, pageSize, nome, search, sortBy, ascending })!, "self", "GET")
+        };
+        if (pageNumber < totalPages)
+            links.Add(new LinkDTO(Url.Link("GetAllTutores", new { pageNumber = pageNumber + 1, pageSize, nome, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1)
+            links.Add(new LinkDTO(Url.Link("GetAllTutores", new { pageNumber = pageNumber - 1, pageSize, nome, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

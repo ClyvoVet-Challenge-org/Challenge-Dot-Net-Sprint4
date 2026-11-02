@@ -3,6 +3,7 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -17,6 +18,7 @@ namespace challenge.IntegrationTests.Integration
         {
             _client = factory.CreateClient();
         }
+
         //Parte de teste de cricao 
         [Fact]
         public async Task CriarEnderecoTutor_DadosValidos_RetornaOk()
@@ -27,15 +29,15 @@ namespace challenge.IntegrationTests.Integration
             var novoEnderecoTutor = new
             {
                 Id_endereco_tutor = id_endereco_tutor,
-                Pais = "brasil",
-                Estado = "rj",
-                Cidade = "são paulo",
-                Bairro = "bairro roxo",
-                Logradouro_rua = "1263",
-                Nr_rua = "Dom Cachorro",
-                Complemento = "1212",
-                Cep = "123456",
-                Id_tutor = 2
+                Pais = "Brasil",
+                Estado = "SP",
+                Cidade = "São Paulo",
+                Bairro = "Bairro amarelo",
+                Logradouro_rua = "Rua Dom coelho",
+                Nr_rua = "11111111",
+                Complemento = "casa 122",
+                Cep = "1918256",
+                Id_tutor = 52
             };
 
             // Act
@@ -48,7 +50,6 @@ namespace challenge.IntegrationTests.Integration
                 Assert.Fail($"Não foi criado por: {erro}");
             }
 
-            response.EnsureSuccessStatusCode();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -61,24 +62,24 @@ namespace challenge.IntegrationTests.Integration
         public async Task UpdateEnderecoTutor_DadosValidos_RetornaSucesso()
         {
             // Arrange
-            var id_enderecoTutor = 35;
+            var id_enderecoTutor = 3;
 
             var enderecoTutorAtualizado = new
             {
                 Id_endereco_tutor = id_enderecoTutor,
-                Pais = "brasil",
-                Estado = "são paulo",
-                Cidade = "nao sei",
-                Bairro = "bairro roxo",
-                Logradouro_rua = "1263",
-                Nr_rua = "Dom Cachorro",
-                Complemento = "1212",
-                Cep = "123456",
-                Id_tutor = 2
+                Pais = "Brasil",
+                Estado = "SP",
+                Cidade = "São Paulo",
+                Bairro = "Bairro Roxo",
+                Logradouro_rua = "Rua Dom",
+                Nr_rua = "12",
+                Complemento = "Casa 2",
+                Cep = "01234567",
+                Id_tutor = 3
             };
 
             // Act
-            var response = await _client.PutAsJsonAsync($"api/enderecotutors/atualizar/enderecoresponsavel/{id_enderecoTutor}",enderecoTutorAtualizado);
+            var response = await _client.PutAsJsonAsync($"api/enderecotutors/atualizar/enderecoresponsavel/{id_enderecoTutor}", enderecoTutorAtualizado);
 
             // Assert
             if (!response.IsSuccessStatusCode)
@@ -96,7 +97,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetEnderecoTutor_dados_RetornaOk()
         {
             // Arrange
-            var id_endereco_tutor = 35;
+            var id_endereco_tutor = 58;
 
             // Act
             var response = await _client.GetAsync($"api/enderecotutors/relatorio/enderecoresponsavel/{id_endereco_tutor}");
@@ -129,10 +130,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var enderecos = await response.Content.ReadFromJsonAsync<List<EnderecoTutorDTO>>();
+            var enderecos = await response.Content.ReadFromJsonAsync<PagedResponse<EnderecoTutorDTO>>();
 
             Assert.NotNull(enderecos);
-            Assert.All(enderecos, item =>
+            Assert.All(enderecos.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -140,7 +141,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteEnderecoTutor_dados_RetornaOk()
         {
             // Arrange
-            var id_endereco_tutor = 62;
+            var id_endereco_tutor = 1;
 
             // Act
             var response = await _client.DeleteAsync($"api/enderecotutors/deleta/enderecoresponsavel/{id_endereco_tutor}");

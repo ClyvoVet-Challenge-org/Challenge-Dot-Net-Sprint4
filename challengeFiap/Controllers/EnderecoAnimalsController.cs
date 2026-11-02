@@ -39,14 +39,83 @@ public class EnderecoAnimalsController : ControllerBase
 
         try
         {
-            var relatorioEnAnimal = await _enderecoAnimalService.GetAllEnderecoAnimalAsync();
-            var enderecoAnimalDtos = relatorioEnAnimal
-                .Select(endereco => CreateEnderecoAnimalDto(endereco))
+            int pageNumber = int.TryParse(Request.Query["pageNumber"], out var pNum) ? pNum : 1;
+            int pageSize = int.TryParse(Request.Query["pageSize"], out var pSize) ? pSize : 10;
+            string? cidade = Request.Query["cidade"].FirstOrDefault();
+            string? search = Request.Query["search"].FirstOrDefault();
+            string sortBy = Request.Query["sortBy"].FirstOrDefault() ?? "cidade";
+            bool ascending = bool.TryParse(Request.Query["ascending"], out var asc) ? asc : true;
+
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 50) pageSize = 50;
+
+            var relatorioEnderecoAnimal = await _enderecoAnimalService.GetAllEnderecoAnimalAsync();
+            var query = relatorioEnderecoAnimal.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(cidade))
+            {
+                query = query.Where(e =>
+                    e.Cidade != null &&
+                    e.Cidade.Contains(
+                        cidade.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(e =>
+                    e.Estado != null &&
+                    e.Estado.Contains(
+                        search.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+            query = sortBy.ToLower() switch
+            {
+                "id" => ascending
+                    ? query.OrderBy(e => e.Id_endereco_animal)
+                    : query.OrderByDescending(e => e.Id_endereco_animal),
+
+                "estado" => ascending
+                    ? query.OrderBy(e => e.Estado)
+                    : query.OrderByDescending(e => e.Estado),
+
+                _ => ascending
+                    ? query.OrderBy(e => e.Cidade)
+                    : query.OrderByDescending(e => e.Cidade)
+            };
+
+            var totalRecords = query.Count();
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
-            _logger.LogInformation("Busca de endereço animal concluída com sucesso");
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
 
-            return Ok(enderecoAnimalDtos);
+            var enderecoAnimalDtos = items.Select(CreateEnderecoAnimalDto)
+                .ToList();
+
+            var paginationLinks = CreatePaginationLinks(
+                pageNumber,
+                pageSize,
+                cidade,
+                search,
+                sortBy,
+                ascending,
+                totalPages);
+
+            var response = new PagedResponse<EnderecoAnimalDTO>(
+                enderecoAnimalDtos,
+                pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords,
+                paginationLinks
+            );
+
+            _logger.LogInformation("Busca de endereço animal concluída com sucesso");
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -86,9 +155,9 @@ public class EnderecoAnimalsController : ControllerBase
                 return NotFound("Endereço animal não encontrado.");
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em buscar endereço animal.");
+            _logger.LogError(ex, "Erro em buscar endereço animal.");
 
             return BadRequest($"Erro em buscar: {ex.Message}");
         }
@@ -107,7 +176,7 @@ public class EnderecoAnimalsController : ControllerBase
     /// <returns>Atualizar: </returns>
     [HttpPut]
     [Route("atualizar/enderecoanimal/{id_endereco_animal:int}", Name = "UpdateEnderecoAnimal")]
-    public async Task<IActionResult> PutEnderecoAnimal(int id_endereco_animal,EnderecoAnimal enderecoanimal)
+    public async Task<IActionResult> PutEnderecoAnimal(int id_endereco_animal, EnderecoAnimal enderecoanimal)
     {
         _logger.LogInformation("Iniciando atualização de endereço animal");
 
@@ -119,7 +188,7 @@ public class EnderecoAnimalsController : ControllerBase
         }
         try
         {
-            var enderecoAnimalAtualizado =await _enderecoAnimalService.UpdateEnderecoAnimalAsync(id_endereco_animal,enderecoanimal);
+            var enderecoAnimalAtualizado = await _enderecoAnimalService.UpdateEnderecoAnimalAsync(id_endereco_animal, enderecoanimal);
 
             _logger.LogInformation("Atualização de endereço animal  foi concluída com sucesso.");
 
@@ -137,7 +206,7 @@ public class EnderecoAnimalsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em atualizar endereco animal.");
+            _logger.LogError(ex, "Erro em atualizar endereco animal.");
 
             return BadRequest(
                 $"Erro em atualizar endereço animal: {ex.Message} ");
@@ -184,9 +253,9 @@ public class EnderecoAnimalsController : ControllerBase
                 return BadRequest("Id animal não existe");
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro ao salvar os dados do endereço animal");
+            _logger.LogError(ex, "Erro ao salvar os dados do endereço animal");
 
             return BadRequest($"Erro ao salvar os dados: {ex.Message}");
         }
@@ -215,9 +284,10 @@ public class EnderecoAnimalsController : ControllerBase
             _logger.LogInformation("EnderecoAnimal foi excluído com sucesso");
 
             return NoContent();
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
-            _logger.LogError(ex,"Erro em deletar endereço animal.");
+            _logger.LogError(ex, "Erro em deletar endereço animal.");
 
             return BadRequest($"Erro em deletar: {ex.Message}");
         }
@@ -233,19 +303,19 @@ public class EnderecoAnimalsController : ControllerBase
                 "self",
                 "GET"
                 ),
-            
+
             new LinkDTO(
                 Url.Link("GetAllEnderecosAnimals", null)!,
                 "collection",
                 "GET"
                 ),
-            
+
             new LinkDTO(
                 Url.Link("UpdateEnderecoAnimal", new { id_endereco_animal = enderecoAnimal.Id_endereco_animal })!,
                 "update",
                 "PUT"
                 ),
-            
+
             new LinkDTO(
                 Url.Link("DeletaEnderecoAnimal", new { id_endereco_animal = enderecoAnimal.Id_endereco_animal })!,
                 "delete",
@@ -254,5 +324,13 @@ public class EnderecoAnimalsController : ControllerBase
         };
 
         return new EnderecoAnimalDTO(enderecoAnimal, links);
+    }
+
+    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? cidade, string? search, string sortBy, bool ascending, int totalPages)
+    {
+        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllEnderecosAnimals", new { pageNumber, pageSize, cidade, search, sortBy, ascending })!, "self", "GET") };
+        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllEnderecosAnimals", new { pageNumber = pageNumber + 1, pageSize, cidade, search, sortBy, ascending })!, "next_page", "GET"));
+        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllEnderecosAnimals", new { pageNumber = pageNumber - 1, pageSize, cidade, search, sortBy, ascending })!, "prev_page", "GET"));
+        return links;
     }
 }

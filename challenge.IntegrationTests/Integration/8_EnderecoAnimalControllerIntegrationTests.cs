@@ -3,6 +3,7 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -33,7 +34,7 @@ namespace challenge.IntegrationTests.Integration
                 Nr_rua = "Dom Cachorro",
                 Complemento = "1212",
                 Cep = "123456",
-                Id_animal = 80
+                Id_animal = 41
             };
 
             // Act
@@ -59,7 +60,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task UpdateEnderecoAnimal_DadosValidos_RetornaSucesso()
         {
             // Arrange
-            var id_endereco_animal = 49;
+            var id_endereco_animal = 35;
 
             var enderecoAnimalAtualizado = new
             {
@@ -72,7 +73,7 @@ namespace challenge.IntegrationTests.Integration
                 Nr_rua = "Dom Cachorro",
                 Complemento = "1212",
                 Cep = "45454",
-                Id_animal = 26
+                Id_animal = 41
             };
 
             // Act
@@ -84,7 +85,6 @@ namespace challenge.IntegrationTests.Integration
                 Assert.Fail($"Não foi atualizado por: {erro}");
             }
 
-
             response.EnsureSuccessStatusCode();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -94,10 +94,10 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetEnderecoAnimal_dados_RetornaOk()
         {
             // Arrange
-            var id_endereco_animal = 11;
+            var id_endereco_animal = 35;
 
             // Act
-            var response = await _client.GetAsync("api/enderecoanimals/relatorio/enderecoanimal/" + id_endereco_animal);
+            var response = await _client.GetAsync($"api/enderecoanimals/relatorio/enderecoanimal/{id_endereco_animal}");
 
             // Assert
             if (response.StatusCode == HttpStatusCode.NotFound)
@@ -127,10 +127,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var enderecos = await response.Content.ReadFromJsonAsync<List<EnderecoAnimalDTO>>();
+            var enderecos = await response.Content.ReadFromJsonAsync<PagedResponse<EnderecoAnimalDTO>>();
 
             Assert.NotNull(enderecos);
-            Assert.All(enderecos, item =>
+            Assert.All(enderecos.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -138,7 +138,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteEnderecoAnimal_dados_RetornaOk()
         {
             // Arrange
-            var id_endereco_animal = 49;
+            var id_endereco_animal = 37;
 
             // Act
             var response = await _client.DeleteAsync($"api/enderecoanimals/deleta/enderecoanimal/{id_endereco_animal}");

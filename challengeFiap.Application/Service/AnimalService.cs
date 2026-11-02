@@ -2,14 +2,7 @@
 using challengeFiap.Domain.Entities;
 using challengeFiap.Infrastruture.Interfaces.MongoRepository;
 using challengeFiap.Infrastruture.Interfaces.OracleRepository;
-using challengeFiap.Infrastruture.Data;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Threading.Tasks;
+using challengeFiap.Infrastruture.Repositorie;
 using challengeFiap.Application.InterfacesService;
 
 namespace challengeFiap.Application.Service

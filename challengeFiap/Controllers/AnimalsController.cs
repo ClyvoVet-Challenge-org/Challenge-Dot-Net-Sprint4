@@ -145,7 +145,7 @@ public class AnimalsController : ControllerBase
                 var animal = await _animalService.GetAnimalAsync(id_animal);
                 _logger.LogInformation("Animal foi encontrado com sucesso");
                 var animalDTo = CreateAnimalDto(animal);
-                
+
                 return Ok(animalDTo);
             }
             catch (Exception ex)
@@ -154,12 +154,12 @@ public class AnimalsController : ControllerBase
                 return NotFound("Id de animal não encontrado");
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao buscar o animal com ID: {IdAnimal}", id_animal);
-            return BadRequest($"Erro em processar a buscar: {ex.Message}");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar o animal com ID: {IdAnimal}", id_animal);
+                return BadRequest($"Erro em processar a buscar: {ex.Message}");
+            }
         }
-    }
 
     // PUT: api/Animal/5
 
@@ -235,21 +235,17 @@ public class AnimalsController : ControllerBase
         _logger.LogInformation("Iniciando processo de criação do animal");
         try
         {
-            var responsavelExistente = await _context.Tutor.FirstOrDefaultAsync(a => a.Id_tutor == animal.Id_tutor);
+            var animalCriado = await _animalService.CreateAnimalAsync(animal);
 
-            if (responsavelExistente != null)
-            {
-                var animalCriado = await _animalService.CreateAnimalAsync(animal);
+            _logger.LogInformation("Criação do {nm_animal} realizada com sucesso", animal.Nm_animal);
 
-                _logger.LogInformation("Criação do {nm_animal} realizada com sucesso", animal.Nm_animal);
+            return Ok(animalCriado);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Tutor informado não encontrado.");
 
-                return Ok(animalCriado);
-            }
-            else
-            {
-                _logger.LogWarning("O tutor com o id tutor não foi encontrado");
-                return BadRequest("Id Tutor não encontrado");
-            }
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {

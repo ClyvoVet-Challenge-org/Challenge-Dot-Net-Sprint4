@@ -3,6 +3,7 @@ using challengeFiap.Domain.Entities;
 using challengeFiap.Domain.Dto;
 using System.Net;
 using System.Net.Http.Json;
+using challengeFiap.Domain;
 
 namespace challenge.IntegrationTests.Integration
 {
@@ -27,11 +28,11 @@ namespace challenge.IntegrationTests.Integration
             var novoMedicamento = new
             {
                 Id_medicamento = id_medicamento,
-                Id_prescricao = 88,
+                Id_prescricao = 40,
                 Nm_medicamento = "AJUDA",
                 Dosagem_medicamento = "GOTA",
                 Frequencia = "2 vezes",
-                Qtd_dias = 1
+                Qtd_dias = 6
             };
 
             // Act
@@ -59,12 +60,12 @@ namespace challenge.IntegrationTests.Integration
         public async Task AtualizarMedicamento_DadosValidos_RetornaOk()
         {
             // Arrange
-            var id_medicamento = 44;
+            var id_medicamento = 40;
 
             var medicamentoAtualizado = new
             {
                 Id_medicamento = id_medicamento,
-                Id_prescricao = 88,
+                Id_prescricao = 59,
                 Nm_medicamento = "Raiva",
                 Dosagem_medicamento = "GOTA",
                 Frequencia = "2 vezes",
@@ -91,7 +92,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task GetMedicamento_dados_RetornaOk()
         {
             // Arrange
-            var id_medicamento = 44;
+            var id_medicamento = 40;
 
             // Act
             var response = await _client.GetAsync($"api/medicamentoes/relatorio/medicamento/{id_medicamento}");
@@ -124,10 +125,10 @@ namespace challenge.IntegrationTests.Integration
 
             Assert.Equal(HttpStatusCode.OK,response.StatusCode);
 
-            var medicamentos = await response.Content.ReadFromJsonAsync<List<MedicamentoDTO>>();
+            var medicamentos = await response.Content.ReadFromJsonAsync<PagedResponse<MedicamentoDTO>>();
 
             Assert.NotNull(medicamentos);
-            Assert.All(medicamentos, item =>
+            Assert.All(medicamentos.Items, item =>
                 Assert.Contains(item.Dto, link => link.Rel == "self" && link.Method == "GET"));
         }
 
@@ -135,7 +136,7 @@ namespace challenge.IntegrationTests.Integration
         public async Task DeleteMedicamento_dados_RetornaOk()
         {
             // Arrange
-            var id_medicamento = 32;
+            var id_medicamento = 63;
 
             // Act
             var response = await _client.DeleteAsync($"api/medicamentoes/deleta/medicamento/{id_medicamento}");

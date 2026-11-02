@@ -11,9 +11,9 @@ namespace challengeFiap.Domain.Dto
 
         public List<LinkDTO> Dto { get; set; }
 
-        public AnimalDTO(Animal a, List<LinkDTO> dto)
+        public AnimalDTO(Animal animal, List<LinkDTO> dto)
         {
-            Animal = a;
+            Animal = animal;
             Dto = dto;
         }
     }
