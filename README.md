@@ -210,6 +210,23 @@ https://localhost:{PORTA}/swagger
 - **Oracle Database**
 - **Swagger / OpenAPI**
 
+<h4>🛠️ Instalações necessarias: </h4>
+
+- Pacote NuGet	Versão
+- AspNetCore.HealthChecks.UI.Client	9.0.0
+- AspNetCore.HealthChecks.Uris	9.0.0
+- Microsoft.AspNetCore.Authentication.JwtBearer	10.0.14
+- Microsoft.EntityFrameworkCore	10.0.14
+- Microsoft.EntityFrameworkCore.Design	10.0.14
+- Microsoft.EntityFrameworkCore.Tools	10.0.14
+- Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore	10.0.14
+- MongoDB.Bson	3.13.0
+- MongoDB.Driver	3.13.0
+- Oracle.EntityFrameworkCore	10.23.264000
+- Scalar.AspNetCore	2.18.3
+- Serilog.AspNetCore	10.0.0
+- Serilog.Sinks.Console	6.1.1
+- Swashbuckle.AspNetCore	10.3.1
 
 ---
 <h4> ✅ Informações sobres os testes e como fazer eles</ha4>
