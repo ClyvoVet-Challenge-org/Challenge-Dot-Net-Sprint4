@@ -208,7 +208,9 @@ https://localhost:{PORTA}/swagger
 - **ASP.NET Core Web API**
 - **Entity Framework Core**
 - **Oracle Database**
+- **MongoDB**
 - **Swagger / OpenAPI**
+- **Scalar**
 
 <h4>🛠️ Instalações necessarias: </h4>
 
