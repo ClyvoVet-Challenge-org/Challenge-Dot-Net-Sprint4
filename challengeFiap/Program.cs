@@ -1,20 +1,20 @@
 using challengeFiap.Application.Service.Token;
+using challengeFiap.Domain.Interfaces;
 using challengeFiap.Infrastruture;
 using challengeFiap.Infrastruture.Data;
 using ChallengeFiap.Infrastruture.Data;
+using ChallengeFiap.Infrastruture.Repositories;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.Tokens.Experimental;
 using Microsoft.OpenApi;
 using MongoDB.Driver;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
-using System.Reflection.Metadata;
 using System.Text;
 
 Log.Logger = new LoggerConfiguration()
@@ -192,6 +192,8 @@ try
 
 
     builder.Services.AddAuthorization();
+
+    builder.Services.AddScoped<IRelatorioRepository, RelatorioOracleRepository>();
 
     //Parte de Serialização
 

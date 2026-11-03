@@ -317,16 +317,64 @@ public class TutorController : ControllerBase
         return new TutorDTO(tutor, links);
     }
 
-    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? nome, string? search, string sortBy, bool ascending, int totalPages)
+    private List<LinkDTO> CreatePaginationLinks(
+        int pageNumber,
+        int pageSize,
+        string? nome,
+        string? search,
+        string sortBy,
+        bool ascending,
+        int totalPages)
     {
+        var routeValues = new
+        {
+            pageNumber,
+            pageSize,
+            nome,
+            search,
+            sortBy,
+            ascending
+        };
         var links = new List<LinkDTO>
         {
-            new LinkDTO(Url.Link("GetAllTutores", new { pageNumber, pageSize, nome, search, sortBy, ascending })!, "self", "GET")
+            new LinkDTO(
+                Url.Link("GetAllTutores", routeValues)!,
+                "self",
+                "GET")
         };
+
         if (pageNumber < totalPages)
-            links.Add(new LinkDTO(Url.Link("GetAllTutores", new { pageNumber = pageNumber + 1, pageSize, nome, search, sortBy, ascending })!, "next_page", "GET"));
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllTutores", new
+            {
+                pageNumber = pageNumber + 1,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending
+            })!,
+                "next_page",
+                "GET"));
+        }
+
         if (pageNumber > 1)
-            links.Add(new LinkDTO(Url.Link("GetAllTutores", new { pageNumber = pageNumber - 1, pageSize, nome, search, sortBy, ascending })!, "prev_page", "GET"));
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllTutores", new
+            {
+                pageNumber = pageNumber - 1,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending
+            })!,
+                "prev_page",
+                "GET"));
+        }
+
         return links;
     }
 }

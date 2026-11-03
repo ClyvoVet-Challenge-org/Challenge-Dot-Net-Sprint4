@@ -327,8 +327,7 @@ public class CarteiraVacinalsController : ControllerBase
         string? search,
         string sortBy,
         bool ascending,
-        int totalPages
-        )
+        int totalPages)
     {
         var routeValues = new
         {
@@ -339,6 +338,7 @@ public class CarteiraVacinalsController : ControllerBase
             sortBy,
             ascending
         };
+
         var links = new List<LinkDTO>
         {
             new LinkDTO(
@@ -346,6 +346,7 @@ public class CarteiraVacinalsController : ControllerBase
                 "self",
                 "GET")
         };
+
         if (pageNumber < totalPages)
         {
             links.Add(new LinkDTO(
@@ -359,10 +360,10 @@ public class CarteiraVacinalsController : ControllerBase
                     ascending
                 })!,
                 "next_page",
-                "GET")
-                );
+                "GET"));
         }
-        if (pageNumber >1)
+
+        if (pageNumber > 1)
         {
             links.Add(new LinkDTO(
                 Url.Link("GetAllCarteirasVacinais", new
@@ -377,6 +378,7 @@ public class CarteiraVacinalsController : ControllerBase
                 "prev_page",
                 "GET"));
         }
+
         return links;
     }
 }

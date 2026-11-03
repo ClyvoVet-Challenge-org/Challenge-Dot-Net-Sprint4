@@ -306,11 +306,64 @@ public class PrescricaosController : ControllerBase
         return new PrescricaoDTO(prescricao, links);
     }
 
-    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? observacoes, string? search, string sortBy, bool ascending, int totalPages)
+    private List<LinkDTO> CreatePaginationLinks(
+        int pageNumber,
+        int pageSize,
+        string? observacoes,
+        string? search,
+        string sortBy,
+        bool ascending,
+        int totalPages)
     {
-        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllPrescricoes", new { pageNumber, pageSize, observacoes, search, sortBy, ascending })!, "self", "GET") };
-        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllPrescricoes", new { pageNumber = pageNumber + 1, pageSize, observacoes, search, sortBy, ascending })!, "next_page", "GET"));
-        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllPrescricoes", new { pageNumber = pageNumber - 1, pageSize, observacoes, search, sortBy, ascending })!, "prev_page", "GET"));
+        var routeValues = new
+        {
+            pageNumber,
+            pageSize,
+            observacoes,
+            search,
+            sortBy,
+            ascending
+        };
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetAllPrescricoes", routeValues)!,
+                "self",
+                "GET")
+        };
+
+        if (pageNumber < totalPages)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllPrescricoes", new
+            {
+                pageNumber = pageNumber + 1,
+                pageSize,
+                observacoes,
+                search,
+                sortBy,
+                ascending
+            })!,
+                "next_page",
+                "GET"));
+        }
+
+        if (pageNumber > 1)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllPrescricoes", new
+            {
+                pageNumber = pageNumber - 1,
+                pageSize,
+                observacoes,
+                search,
+                sortBy,
+                ascending
+            })!,
+                "prev_page",
+                "GET"));
+        }
+
         return links;
     }
 }

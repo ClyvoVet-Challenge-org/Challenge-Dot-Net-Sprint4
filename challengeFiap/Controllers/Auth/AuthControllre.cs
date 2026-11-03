@@ -20,7 +20,7 @@ namespace challengeFiap.Controllers.Auth
         [AllowAnonymous]
         public IActionResult Login([FromBody] UserLoginAux user)
         {
-            if (user.Username == "admin" && user.Password == "admin")
+            if (user.Username == "admin" && user.Password == "123456")
             {
                 var token = _tokenService.GenerateToken(user.Username);
                 return Ok(new { token });

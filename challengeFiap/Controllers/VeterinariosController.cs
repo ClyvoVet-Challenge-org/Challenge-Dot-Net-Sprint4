@@ -321,11 +321,64 @@ public class VeterinariosController : ControllerBase
         return new VeterinarioDTO(veterinario, links);
     }
 
-    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? nome, string? search, string sortBy, bool ascending, int totalPages)
+    private List<LinkDTO> CreatePaginationLinks(
+        int pageNumber,
+        int pageSize,
+        string? nome,
+        string? search,
+        string sortBy,
+        bool ascending,
+        int totalPages)
     {
-        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllVeterinarios", new { pageNumber, pageSize, nome, search, sortBy, ascending })!, "self", "GET") };
-        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllVeterinarios", new { pageNumber = pageNumber + 1, pageSize, nome, search, sortBy, ascending })!, "next_page", "GET"));
-        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllVeterinarios", new { pageNumber = pageNumber - 1, pageSize, nome, search, sortBy, ascending })!, "prev_page", "GET"));
+        var routeValues = new
+        {
+            pageNumber,
+            pageSize,
+            nome,
+            search,
+            sortBy,
+            ascending
+        };
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetAllVeterinarios", routeValues)!,
+                "self",
+                "GET")
+        };
+
+        if (pageNumber < totalPages)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllVeterinarios", new
+            {
+                pageNumber = pageNumber + 1,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending
+            })!,
+                "next_page",
+                "GET"));
+        }
+
+        if (pageNumber > 1)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllVeterinarios", new
+            {
+                pageNumber = pageNumber - 1,
+                pageSize,
+                nome,
+                search,
+                sortBy,
+                ascending
+            })!,
+                "prev_page",
+                "GET"));
+        }
+
         return links;
     }
 }

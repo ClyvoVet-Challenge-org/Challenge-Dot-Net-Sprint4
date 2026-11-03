@@ -319,11 +319,65 @@ public class ConsultasController : ControllerBase
         return new ConsultaDTO(consulta, links);
     }
 
-    private List<LinkDTO> CreatePaginationLinks(int pageNumber, int pageSize, string? status, string? search, string sortBy, bool ascending, int totalPages)
+    private List<LinkDTO> CreatePaginationLinks(
+        int pageNumber,
+        int pageSize,
+        string? status,
+        string? search,
+        string sortBy,
+        bool ascending,
+        int totalPages)
     {
-        var links = new List<LinkDTO> { new LinkDTO(Url.Link("GetAllConsultas", new { pageNumber, pageSize, status, search, sortBy, ascending })!, "self", "GET") };
-        if (pageNumber < totalPages) links.Add(new LinkDTO(Url.Link("GetAllConsultas", new { pageNumber = pageNumber + 1, pageSize, status, search, sortBy, ascending })!, "next_page", "GET"));
-        if (pageNumber > 1) links.Add(new LinkDTO(Url.Link("GetAllConsultas", new { pageNumber = pageNumber - 1, pageSize, status, search, sortBy, ascending })!, "prev_page", "GET"));
+        var routeValues = new
+        {
+            pageNumber,
+            pageSize,
+            status,
+            search,
+            sortBy,
+            ascending
+        };
+
+        var links = new List<LinkDTO>
+        {
+            new LinkDTO(
+                Url.Link("GetAllConsultas", routeValues)!,
+                "self",
+                "GET")
+        };
+
+        if (pageNumber < totalPages)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllConsultas", new
+                {
+                    pageNumber = pageNumber + 1,
+                    pageSize,
+                    status,
+                    search,
+                    sortBy,
+                    ascending
+                })!,
+                "next_page",
+                "GET"));
+        }
+
+        if (pageNumber > 1)
+        {
+            links.Add(new LinkDTO(
+                Url.Link("GetAllConsultas", new
+                {
+                    pageNumber = pageNumber - 1,
+                    pageSize,
+                    status,
+                    search,
+                    sortBy,
+                    ascending
+                })!,
+                "prev_page",
+                "GET"));
+        }
+
         return links;
     }
 }
