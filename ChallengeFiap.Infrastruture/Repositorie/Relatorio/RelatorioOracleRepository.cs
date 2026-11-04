@@ -5,7 +5,7 @@ using Oracle.ManagedDataAccess.Types;
 using System.Data;
 using challengeFiap.Domain.Interfaces.IRelatorio;
 
-namespace ChallengeFiap.Infrastruture.Repositories
+namespace ChallengeFiap.Infrastruture.Repositorie.Relatorio
 {
     public class RelatorioOracleRepository : IRelatorioRepository
     {

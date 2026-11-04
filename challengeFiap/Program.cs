@@ -5,7 +5,7 @@ using challengeFiap.Domain.Interfaces.IService;
 using challengeFiap.Infrastruture;
 using challengeFiap.Infrastruture.Data;
 using ChallengeFiap.Infrastruture.Data;
-using ChallengeFiap.Infrastruture.Repositories;
+using ChallengeFiap.Infrastruture.Repositorie.Relatorio;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;

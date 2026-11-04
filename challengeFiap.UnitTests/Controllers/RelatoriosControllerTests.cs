@@ -1,6 +1,7 @@
 using challengeFiap.Controllers;
 using challengeFiap.Domain.Interfaces.IService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace challengeFiap.UnitTests.Controllers
@@ -13,7 +14,9 @@ namespace challengeFiap.UnitTests.Controllers
         public RelatoriosControllerTests()
         {
             _relatorioServiceMock = new Mock<IRelatorioService>();
-            _controller = new RelatoriosController(_relatorioServiceMock.Object);
+            _controller = new RelatoriosController(
+                _relatorioServiceMock.Object,
+                NullLogger<RelatoriosController>.Instance);
         }
 
         [Fact]
