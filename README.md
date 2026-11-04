@@ -36,13 +36,16 @@ Como os animais não conseguem comunicar o que sentem, é comum que os tutores s
 
 <p>Para aumentar a recorrência de visitas, o sistema envia mensagens automáticas ao Tutor pelo animal após um determinado período desde a última consulta ou vacinação, perguntando sobre o interesse em agendar um novo atendimento — com opção de confirmar ou recusar diretamente pela mensagem.</p>
 
-<h2>⚙️ Sobre o Backend (.NET) </h2>
+<h2>⚙️ Sobre o Backend (.NET)</h2>
 
-<p>O projeto .NET atua como o **sistema de backend CRUD** da plataforma, Tutor por:</p>
+<p>O projeto .NET atua como o sistema de backend (API RESTful) da plataforma Cylvo,
+com operações de CRUD para criar, consultar, atualizar e remover dados.</p>
 
-- Gerenciar todos os dados da aplicação no Banco de Dados Oracle
+- Gerenciar os dados da aplicação nos bancos Oracle e MongoDB
 - Expor APIs REST para que o Frontend consuma e interaja com os dados
-
+- **Oracle (relacional):** persistência dos dados com Entity Framework Core e migrations
+- **MongoDB (NoSQL):** persistência dos dados em documentos, usando o driver oficial
+- **Relatórios (opcional):** integração com as procedures do pacote `PKG_CYLVO_RELATORIO` no Oracle, reaproveitadas do projeto de Banco de Dados
 
 <h2> 🛣️ Rotas da API: </h2>
 
@@ -197,7 +200,7 @@ Ou
 <h4> 8. Acessar o Scalar</h4>
 
 ```
-https://localhost:{PORTA}/swagger
+https://localhost:{PORTA}/scalar
 ```
 > Substitua `{PORTA}` pelo número exibido no terminal ao iniciar a aplicação.
 
@@ -306,6 +309,39 @@ Assim voce tera o token necessario para receber validação do sistema.
 
 	Dentro do banco de dados, há uma regra presente de que alguns status precisavam receber certas aplicações presentes para ficar organizado e claro, colocando um padrão presente.
 	Por causa disso, foi criado o enum para assim se organizar, e eles são: status de consulta para a tabela consulta e status de vacinação para a tabela de vacinação.
+
+<h5>Informações sobre a parte relatorios: </h5>
+
+<p>Essa opção foi opçaõ presente foi criada especifcalmente para buscar as procrues criadas presente como foi feito no oracle para nos oferecer relatorios sobre informaç~eos do veterianario, animal, proxima consulta e entre outros</p>
+
+<h4>Resumo dos relatórios </h4>
+
+- **Resumo de consultas por veterinário** (`/resumo-veterinarios`)
+Mostra uma linha por veterinário com o total de consultas realizadas e pendentes e os animais da última consulta, da consulta em andamento e da próxima.
+
+- **Relatório por espécie** (`/especies`)
+Agrupa os animais por espécie e mostra a quantidade, o peso médio, o maior e o menor peso, além do total geral de animais.
+
+- **Consultas por clínica** (`/clinicas`)
+Lista cada clínica com o número de veterinários e de consultas realizadas, agrupadas por estado, com subtotal por estado e total geral.
+
+- **Frequência dos animais** (`/consultas-realizadas`)
+Mostra, para cada paciente, o veterinário, a clínica e a quantidade de consultas realizadas, e indica o paciente mais frequente.
+
+- **Ocorrências** (`/ocorrencias`)
+Lista os erros registrados na tabela de logs, com procedure, data, código e mensagem, e conta o total por procedure e o total geral.
+
+- **Moradia do animal e do tutor** (`/moradia-animal-tutor`)
+Compara o bairro do animal com o do tutor, indica se moram no mesmo local e conta quantos animais vivem com o responsável.
+
+- **Consultas de um veterinário** (`/veterinario/{nomeVet}`)
+Busca um veterinário pelo nome e lista suas consultas, com paciente, espécie, data, status e histórico.
+
+- **Informações de um animal** (`/animal/{nomeAnimal}`)
+Busca um animal pelo nome e mostra seus dados, o tutor, a carteira vacinal e o endereço.
+
+- **Atendimentos de um veterinário por espécie** (`/veterinario/consultas/{idVet}`)
+Busca um veterinário pelo id e lista os animais atendidos, agrupados por espécie, com a quantidade de consultas realizadas e os subtotais.
 
 ---
 *Desenvolvido com 💙 pela equipe CLYVO — FIAP 2026*
