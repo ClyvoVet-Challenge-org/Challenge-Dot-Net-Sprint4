@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 using System.Data;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.IRelatorio;
 
 namespace ChallengeFiap.Infrastruture.Repositories
 {
@@ -78,7 +78,7 @@ namespace ChallengeFiap.Infrastruture.Repositories
             );
         }
 
-        public Task<List<string>> ProRelatorioMedicamentoAnimalAsync(int idVet)
+        public Task<List<string>> RelatorioVetConsultaAsync(int idVet)
         {
             return ExecutarRelatorioAsync(
                 "BEGIN PKG_CYLVO_RELATORIO.PRO_RELATORIO_MEDICAMENTO_ANIMAL(:p_id_vet); END;",

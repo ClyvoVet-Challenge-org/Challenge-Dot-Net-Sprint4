@@ -1,5 +1,5 @@
 using challengeFiap.Domain.Entities;
-using challengeFiap.Infrastruture.Interfaces.MongoRepository;
+using challengeFiap.Domain.Interfaces.IMongoRepository;
 using ChallengeFiap.Infrastruture.Data;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;

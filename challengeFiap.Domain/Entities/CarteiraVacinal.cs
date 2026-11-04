@@ -17,9 +17,9 @@ namespace challengeFiap.Domain.Entities
         [Required]
         [Column("dt_vacinacao_prevista")]
         public DateTime Dt_vacina_prevista { get; set; }
-        [Required]
+
         [Column("dt_vacinacao_efetuada")]
-        public DateTime Dt_vacina_efetuada { get;  set; }
+        public DateTime? Dt_vacina_efetuada { get;  set; }
         [Required]
         [Column("st_vacina")]
         public StatusVacinacao St_vacina { get;  set; }
@@ -33,7 +33,7 @@ namespace challengeFiap.Domain.Entities
 
         public CarteiraVacinal() { }
 
-        public CarteiraVacinal(int id_carteiraVacinal, string nm_vacina, DateTime dt_vacina_prevista, DateTime dt_vacina_efetuada, StatusVacinacao st_vacina, int id_animal)
+        public CarteiraVacinal(int id_carteiraVacinal, string nm_vacina, DateTime dt_vacina_prevista, DateTime? dt_vacina_efetuada, StatusVacinacao st_vacina, int id_animal)
         {
             Id_carteiraVacinal = id_carteiraVacinal;
             Nm_vacina = nm_vacina;

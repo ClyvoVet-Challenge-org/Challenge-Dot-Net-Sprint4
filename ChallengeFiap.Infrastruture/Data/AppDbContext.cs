@@ -119,7 +119,7 @@ namespace challengeFiap.Infrastruture.Data
             modelBuilder.Entity<CarteiraVacinal>().Property(g => g.Id_carteiraVacinal).HasColumnName("ID_CARTEIRAVACINAL").IsRequired();
             modelBuilder.Entity<CarteiraVacinal>().Property(g => g.Nm_vacina).HasColumnName("NM_VACINA").IsRequired();
             modelBuilder.Entity<CarteiraVacinal>().Property(g => g.Dt_vacina_prevista).HasColumnName("DT_VACINACAO_PREVISTA");
-            modelBuilder.Entity<CarteiraVacinal>().Property(g => g.Dt_vacina_efetuada).HasColumnName("DT_VACINACAO_EFETUADA").IsRequired();
+            modelBuilder.Entity<CarteiraVacinal>().Property(g => g.Dt_vacina_efetuada).HasColumnName("DT_VACINACAO_EFETUADA");
             modelBuilder.Entity<CarteiraVacinal>().Property(g => g.St_vacina).HasColumnName("ST_VACINACAO").HasConversion<string>();
             modelBuilder.Entity<CarteiraVacinal>().Property(g => g.Id_animal).HasColumnName("ID_ANIMAL").IsRequired();
             modelBuilder.Entity<CarteiraVacinal>().HasOne(g => g.Animal).WithMany().HasForeignKey(g => g.Id_animal).IsRequired();

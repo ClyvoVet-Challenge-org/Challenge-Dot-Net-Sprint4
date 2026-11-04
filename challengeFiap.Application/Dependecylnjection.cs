@@ -1,8 +1,8 @@
-﻿using challengeFiap.Application.Diagnostics;
-using challengeFiap.Application.InterfacesService;
+using challengeFiap.Application.Diagnostics;
+using challengeFiap.Domain.Interfaces.IService;
 using challengeFiap.Application.Service;
-using challengeFiap.Infrastruture.Interfaces.MongoRepository;
-using challengeFiap.Infrastruture.Interfaces.OracleRepository;
+using challengeFiap.Domain.Interfaces.IMongoRepository;
+using challengeFiap.Domain.Interfaces.IOracleRepository;
 using ChallengeFiap.Infrastruture.Repositorie.MongoRepository;
 using ChallengeFiap.Infrastruture.Repositorie.OracleRepository;
 using Microsoft.Extensions.DependencyInjection;

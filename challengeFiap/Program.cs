@@ -1,5 +1,7 @@
+using challengeFiap.Application.Service;
 using challengeFiap.Application.Service.Token;
-using challengeFiap.Domain.Interfaces;
+using challengeFiap.Domain.Interfaces.IRelatorio;
+using challengeFiap.Domain.Interfaces.IService;
 using challengeFiap.Infrastruture;
 using challengeFiap.Infrastruture.Data;
 using ChallengeFiap.Infrastruture.Data;
@@ -194,6 +196,7 @@ try
     builder.Services.AddAuthorization();
 
     builder.Services.AddScoped<IRelatorioRepository, RelatorioOracleRepository>();
+    builder.Services.AddScoped<IRelatorioService, RelatorioService>();
 
     //Parte de Serialização
 

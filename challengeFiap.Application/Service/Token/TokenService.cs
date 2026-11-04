@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -12,14 +13,19 @@ namespace challengeFiap.Application.Service.Token
     public class TokenService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<TokenService> _logger;
 
-        public TokenService(IConfiguration configuration)
+        public TokenService(
+            IConfiguration configuration,
+            ILogger<TokenService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public string GenerateToken(string username)
         {
+            _logger.LogInformation("Gerando token de autenticação.");
             var key = _configuration["Jwt:Key"];
             var isseur = _configuration["Jwt:Issuer"];
             var audience = _configuration["Jwt:Audience"];

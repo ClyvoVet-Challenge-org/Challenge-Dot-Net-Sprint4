@@ -1,5 +1,5 @@
 using challengeFiap.Domain.Entities;
-using challengeFiap.Infrastruture.Interfaces.OracleRepository;
+using challengeFiap.Domain.Interfaces.IOracleRepository;
 using challengeFiap.Infrastruture.Data;
 using Microsoft.EntityFrameworkCore;
 using System;

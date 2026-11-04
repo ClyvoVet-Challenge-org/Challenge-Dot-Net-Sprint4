@@ -1,5 +1,5 @@
-﻿using challengeFiap.Domain.Entities;
-using challengeFiap.Application.InterfacesService;
+using challengeFiap.Domain.Entities;
+using challengeFiap.Domain.Interfaces.IService;
 using challengeFiap.Infrastruture.Data;
 using challengeFiap.Domain;
 using challengeFiap.Domain.Dto;

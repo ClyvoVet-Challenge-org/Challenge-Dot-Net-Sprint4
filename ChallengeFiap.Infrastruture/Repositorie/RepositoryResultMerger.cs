@@ -1,5 +1,6 @@
 namespace challengeFiap.Infrastruture.Repositorie;
 
+//eles sao utilizando mais no get e get all
 public static class RepositoryResultMerger
 {
     //Como temos dois repositorios presente no nosso sistema, oracle e mongo, 
