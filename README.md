@@ -314,6 +314,8 @@ Assim voce tera o token necessario para receber validação do sistema.
 
 <p>Essa opção foi opçaõ presente foi criada especifcalmente para buscar as procrues criadas presente como foi feito no oracle para nos oferecer relatorios sobre informaç~eos do veterianario, animal, proxima consulta e entre outros</p>
 
+<p>Ela foi desenvolvida por causa do Challenge de Banco de Dados, que pedia a execução das procedures a partir de uma aplicação. Foi mantida neste projeto porque se conecta ao mesmo banco de dados Oracle e mostra a integração entre as duas disciplinas. É uma funcionalidade opcional: o CRUD, o MongoDB, a autenticação e os health checks funcionam sem ela.</p>
+
 <h4>Resumo dos relatórios </h4>
 
 - **Resumo de consultas por veterinário** (`/resumo-veterinarios`)
@@ -342,6 +344,14 @@ Busca um animal pelo nome e mostra seus dados, o tutor, a carteira vacinal e o e
 
 - **Atendimentos de um veterinário por espécie** (`/veterinario/consultas/{idVet}`)
 Busca um veterinário pelo id e lista os animais atendidos, agrupados por espécie, com a quantidade de consultas realizadas e os subtotais.
+
+<h5>Como faz essa opção funcionar: </h5>
+
+<p>Primeiramente precisa oracle o packagem da procures e seu body para elas funcionar</p>
+
+Link para baixar procurre para execultar no oracle
+[📁 Baixar scripts Oracle (Google Drive)](https://drive.google.com/drive/folders/1rzClhXN-PW6BPYwPof1rEpmlk8UVdvEy?usp=drive_link)
+
 
 ---
 *Desenvolvido com 💙 pela equipe CLYVO — FIAP 2026*
