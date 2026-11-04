@@ -110,6 +110,7 @@ namespace challengeFiap.UnitTests.Controllers
         public async Task ConsultasVeterinario_RetornaOk()
         {
             var nomeVeterinario = "Dr. Silva";
+
             var resultado = new List<string> { "Consulta do veterinário" };
             _relatorioServiceMock
                 .Setup(service => service.ProcurarVetConsultasAsync(nomeVeterinario))
@@ -125,7 +126,7 @@ namespace challengeFiap.UnitTests.Controllers
         [Fact]
         public async Task InformacoesAnimal_RetornaOk()
         {
-            var nomeAnimal = "Rex";
+            var nomeAnimal = "Mimi";
             var resultado = new List<string> { "Informações do animal" };
             _relatorioServiceMock
                 .Setup(service => service.ProcurarInformacaoAnimalAsync(nomeAnimal))
@@ -141,7 +142,8 @@ namespace challengeFiap.UnitTests.Controllers
         [Fact]
         public async Task RelatorioVetConsulta_RetornaOk()
         {
-            var idVeterinario = 1;
+            var idVeterinario = 51;
+
             var resultado = new List<string> { "Relatório do veterinário" };
             _relatorioServiceMock
                 .Setup(service => service.RelatorioVetConsultaAsync(idVeterinario))
